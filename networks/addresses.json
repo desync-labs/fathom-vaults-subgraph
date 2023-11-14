@@ -1,0 +1,19 @@
+{
+  "50": {
+      "xinfin":{
+          "addresses": {
+            "Factory": "0x9fAb572F75008A42c6aF80b36Ab20C76a38ABc4B"
+          },
+          "blockNumber":"59776353"    
+      }
+  },
+  "51": {
+      "dev":{
+          "addresses": {
+            "Vault": "0xbe401B027d4D21716c6bd5Be351520E880D764dB"
+          },
+          "blockNumber":"56840754"
+      },
+      "network":"apothem"
+  }
+}
