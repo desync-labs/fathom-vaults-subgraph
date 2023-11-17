@@ -5,10 +5,8 @@ import {
     VaultDayData,
     VaultUpdate,
   } from '../../../generated/schema';
-  import { Address, BigInt } from '@graphprotocol/graph-ts';
+  import { Address, BigInt, log } from '@graphprotocol/graph-ts';
   import { BIGINT_ZERO } from '../constants';
-  import { usdcPricePerToken } from '../oracle/usdc-oracle';
-  import { log } from 'matchstick-as';
   
   export function updateVaultDayData(
     transaction: Transaction,
@@ -39,11 +37,6 @@ import {
     }
   
     log.debug('[VaultDayData] Resolving token price for {}', [vault.token]);
-    let usdcPrice = usdcPricePerToken(Address.fromString(vault.token));
-    log.debug('[VaultDayData] Token price extracted from oracle: {}', [
-      usdcPrice.toString(),
-    ]);
-    vaultDayData.tokenPriceUSDC = usdcPrice;
   
     vaultDayData.pricePerShare = vaultUpdate.pricePerShare;
     vaultDayData.deposited = vaultDayData.deposited.plus(
@@ -60,10 +53,6 @@ import {
     // @ts-ignore
     let u8Decimals = u8(underlying!.decimals);
     let priceDivisor = BigInt.fromI32(10).pow(u8Decimals);
-  
-    vaultDayData.dayReturnsGeneratedUSDC = vaultUpdate.returnsGenerated
-      .times(usdcPrice)
-      .div(priceDivisor);
   
     log.debug(
       '[VaultDayData] Basic data fields resolved, moving on to historical fields.',
@@ -91,9 +80,6 @@ import {
         vaultDayData.totalReturnsGenerated = previousVaultDayData.totalReturnsGenerated.plus(
           vaultDayData.dayReturnsGenerated
         );
-        vaultDayData.totalReturnsGeneratedUSDC = previousVaultDayData.totalReturnsGeneratedUSDC.plus(
-          vaultDayData.dayReturnsGenerated.times(usdcPrice).div(priceDivisor)
-        );
         break;
       } else {
         daysInPast += 1;
@@ -103,9 +89,6 @@ import {
             [maxSearchDepth.toString()]
           );
           vaultDayData.totalReturnsGenerated = vaultDayData.dayReturnsGenerated;
-          vaultDayData.totalReturnsGeneratedUSDC = vaultDayData.dayReturnsGenerated
-            .times(usdcPrice)
-            .div(priceDivisor);
         }
       }
     }

@@ -6,7 +6,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: FathomVault
-    network: apothem
+    network: mainnet
     source:
       abi: FathomVault
       address: '0xbe401B027d4D21716c6bd5Be351520E880D764dB'
@@ -69,8 +69,6 @@ dataSources:
           handler: handleUpdateWithdrawLimitModule
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
         - event: Deposit(indexed address,indexed address,uint256,uint256)
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
@@ -78,7 +76,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: FathomVault
-    network: apothem
+    network: mainnet
     source:
       abi: FathomVault
     mapping:

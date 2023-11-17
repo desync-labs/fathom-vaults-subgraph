@@ -45,6 +45,7 @@ import { Transaction,
   import * as strategyLibrary from '../utils/strategy/strategy';
   import * as vaultLibrary from '../utils/vault/vault';
   import * as accountLibrary from '../utils/account/account';
+  import { fromSharesToAmount, printCallInfo } from '../utils/commons';
 
 export function handleStrategyChanged(event: StrategyChanged): void {
   log.info('[Vault mappings] Handle strategy changed', []);
@@ -100,9 +101,11 @@ export function handleStrategyReported(event: StrategyReported): void {
   let vaultContract = FathomVault.bind(vaultContractAddress);
   vaultLibrary.strategyReported(
     ethTransaction,
-    strategyReport,
+    strategyReport as StrategyReport,
     vaultContract,
-    vaultContractAddress
+    vaultContractAddress,
+    event.block.timestamp,
+    event.block.number
   );
 }
 
@@ -135,7 +138,7 @@ export function handleUpdateRoleManager(event: UpdateRoleManager): void {
     'UpdateRoleManager'
   );
 
-  vaultLibrary.handleUpdateRoleManager(
+  vaultLibrary.updateRoleManager(
     event.address,
     event.params.roleManager,
     ethTransaction
@@ -148,7 +151,7 @@ export function handleUpdateAccountant(event: UpdateAccountant): void {
     'UpdateAccountant'
   );
 
-  vaultLibrary.handleUpdateRoleManager(
+  vaultLibrary.updateRoleManager(
     event.address,
     event.params.accountant,
     ethTransaction
@@ -194,7 +197,7 @@ export function handleUpdateDepositLimit(event: UpdateDepositLimit): void {
     'UpdateDepositLimit'
   );
 
-  vaultLibrary.handleUpdateDepositLimit(
+  vaultLibrary.updateDepositLimit(
     event.address,
     event.params.depositLimit,
     ethTransaction
@@ -202,41 +205,192 @@ export function handleUpdateDepositLimit(event: UpdateDepositLimit): void {
 }
 
 export function handleUpdateMinimumTotalIdle(event: UpdateMinimumTotalIdle): void {
-  // Implementation
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdateMinimumTotalIdle'
+  );
+
+  vaultLibrary.updateMinimumTotalIdle(
+    event.address,
+    event.params.minimumTotalIdle,
+    ethTransaction
+  );
 }
 
 export function handleUpdateProfitMaxUnlockTime(event: UpdateProfitMaxUnlockTime): void {
-  // Implementation
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdateProfitMaxUnlockTime'
+  );
+
+  vaultLibrary.updateProfitMaxUnlockTime(
+    event.address,
+    event.params.profitMaxUnlockTime,
+    ethTransaction
+  );
 }
 
 export function handleDebtPurchased(event: DebtPurchased): void {
-  // Implementation
+  log.info('[Vault mappings] Handle debt purchased', []);
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'DebtPurchased'
+  );
+
+  strategyLibrary.updateDebtPurchased(
+    event.address,
+    event.params.strategy,
+    event.params.amount,
+    ethTransaction
+  );
 }
 
 export function handleShutdown(event: Shutdown): void {
-  // Implementation
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'Shutdown'
+  );
+
+  vaultLibrary.shutdown(
+    event.address,
+    ethTransaction
+  );
 }
 
 export function handleUpdateDepositLimitModule(event: UpdateDepositLimitModule): void {
-  // Implementation
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdateDepositLimitModule'
+  );
+
+  vaultLibrary.updateDepositLimitModule(
+    event.address,
+    event.params.depositLimitModule,
+    ethTransaction
+  );
 }
 
 export function handleUpdateWithdrawLimitModule(event: UpdateWithdrawLimitModule): void {
-  // Implementation
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'WithdrawDepositLimitModule'
+  );
+
+  vaultLibrary.updateWithdrawLimitModule(
+    event.address,
+    event.params.withdrawLimitModule,
+    ethTransaction
+  );
 }
 
 export function handleTransfer(event: Transfer): void {
-  // Implementation
-}
+  log.info('[Vault mappings] Handle transfer: From: {} - To: {}. TX hash: {}', [
+    event.params.from.toHexString(),
+    event.params.to.toHexString(),
+    event.transaction.hash.toHexString(),
+  ]);
+  if (
+    event.params.from.toHexString() != ZERO_ADDRESS &&
+    event.params.to.toHexString() != ZERO_ADDRESS
+  ) {
+    if (!vaultLibrary.isVault(event.address)) {
+      log.info(
+        '[Transfer] Transfer {} is not on behalf of a vault entity. Not processing.',
+        [event.transaction.hash.toHexString()]
+      );
+      return;
+    }
 
-export function handleApproval(event: Approval): void {
-  // Implementation
+    log.info(
+      '[Vault mappings] Processing transfer: Vault: {} From: {} - To: {}. TX hash: {}',
+      [
+        event.address.toHexString(),
+        event.params.from.toHexString(),
+        event.params.to.toHexString(),
+        event.transaction.hash.toHexString(),
+      ]
+    );
+    let transaction = getOrCreateTransactionFromEvent(
+      event,
+      'Transfer'
+    );
+    let vaultContract = FathomVault.bind(event.address);
+    let totalAssets = vaultLibrary.getTotalAssets(event.address);
+    let totalSupply = vaultContract.totalSupply();
+    let sharesAmount = event.params.value;
+    let amount = fromSharesToAmount(sharesAmount, totalAssets, totalSupply);
+    // share  = (amount * totalSupply) / totalAssets
+    // amount = (shares * totalAssets) / totalSupply
+    vaultLibrary.transfer(
+      vaultContract,
+      event.params.from,
+      event.params.to,
+      amount,
+      vaultContract.ASSET(),
+      sharesAmount,
+      event.address,
+      transaction
+    );
+  } else {
+    log.info(
+      '[Vault mappings] Not processing transfer: From: {} - To: {}. TX hash: {}',
+      [
+        event.params.from.toHexString(),
+        event.params.to.toHexString(),
+        event.transaction.hash.toHexString(),
+      ]
+    );
+  }
 }
 
 export function handleDeposit(event: Deposit): void {
-  // Implementation
+  log.debug('[Vault mappings] Handle deposit', []);
+
+  let transaction = getOrCreateTransactionFromEvent(event, 'Deposit');
+
+  let amount = event.params.assets;
+  let sharesMinted = event.params.shares;
+  let recipient = event.params.owner;
+  let vaultAddress = event.address;
+
+  log.info('[Vault mappings] Handle deposit shares {} - amount {}', [
+    sharesMinted.toString(),
+    amount.toString(),
+  ]);
+
+  vaultLibrary.deposit(
+    vaultAddress,
+    transaction,
+    recipient,
+    amount,
+    sharesMinted,
+    event.block.timestamp,
+    event.block.number
+  );
 }
 
 export function handleWithdraw(event: Withdraw): void {
-  // Implementation
+  log.debug('[Vault mappings] Handle withdraw', []);
+
+  let transaction = getOrCreateTransactionFromEvent(event, 'Withdraw');
+
+  let amount = event.params.assets;
+  let sharesBurnt = event.params.shares;
+  let recipient = event.params.receiver;
+  let vaultAddress = event.address;
+
+  log.info('[Vault mappings] Handle withdraw shares {} - amount {}', [
+    sharesBurnt.toString(),
+    amount.toString(),
+  ]);
+
+  vaultLibrary.withdraw(
+    vaultAddress,
+    recipient,
+    amount,
+    sharesBurnt,
+    transaction,
+    event.block.timestamp,
+    event.block.number
+  );
 }

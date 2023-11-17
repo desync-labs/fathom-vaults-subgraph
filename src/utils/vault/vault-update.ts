@@ -1,8 +1,6 @@
 import { Address, BigInt, Bytes, log } from '@graphprotocol/graph-ts';
 import {
-  HealthCheck,
   Token,
-  TokenFee,
   Transaction,
   Vault,
   VaultUpdate,
@@ -11,7 +9,6 @@ import {
 import { BIGINT_ZERO } from '../constants';
 import { updateVaultDayData } from './vault-day-data';
 import { FathomVault } from '../../../generated/FathomVault/FathomVault';
-import * as tokenFeeLibrary from './../token-fees';
 import { getTotalAssets } from './vault';
 
 export function buildIdFromVaultTxHashAndIndex(
@@ -37,8 +34,10 @@ export function buildIdFromVaultAndTransaction(
 
 function createVaultUpdate(
   id: string,
-  vault: Vault,
+  timestamp: BigInt,
+  blockNumber: BigInt,
   transaction: Transaction,
+  vault: Vault,
   tokensDeposited: BigInt,
   tokensWithdrawn: BigInt,
   sharesMinted: BigInt,
@@ -49,11 +48,16 @@ function createVaultUpdate(
   // Their final representation in the VaultUpdate will be as a "total" field, so:
   // totalFees(n) = totalFees(n-1)+feesPaid
   feesPaid: BigInt | null,
+  newProtocolFee: BigInt | null,
   depositLimit: BigInt,
   accountant: Bytes,
   roleManager: Bytes,
   depositLimitModule: Bytes,
-  withdrawLimitModule: Bytes
+  withdrawLimitModule: Bytes,
+  minimumTotalIdle: BigInt,
+  profitMaxUnlockTime: BigInt,
+  totalDebtAmount: BigInt,
+  totalIdleAmount: BigInt
 ): VaultUpdate {
   log.debug('[VaultUpdate] Creating vault update with id {}', [id]);
 
@@ -65,6 +69,7 @@ function createVaultUpdate(
   );
 
   vaultUpdate.depositLimit = depositLimit;
+  vaultUpdate.newProtocolFee = newProtocolFee;
 
   // Balances & Shares
   vaultUpdate.tokensDeposited = tokensDeposited;
@@ -78,6 +83,13 @@ function createVaultUpdate(
   vaultUpdate.roleManager = roleManager;
   vaultUpdate.depositLimitModule = depositLimitModule;
   vaultUpdate.withdrawLimitModule = withdrawLimitModule;
+
+  vaultUpdate.timestamp = timestamp;
+  vaultUpdate.blockNumber = blockNumber;
+  vaultUpdate.minimumTotalIdle = minimumTotalIdle;
+  vaultUpdate.profitMaxUnlockTime = profitMaxUnlockTime;
+  vaultUpdate.totalDebtAmount = totalDebtAmount;
+  vaultUpdate.totalIdleAmount = totalIdleAmount;
   vaultUpdate.save();
 
   vault.latestUpdate = vaultUpdate.id;
@@ -88,11 +100,6 @@ function createVaultUpdate(
     .minus(tokensWithdrawn);
 
   vault.sharesSupply = vault.sharesSupply.plus(sharesMinted).minus(sharesBurnt);
-  if (vault.depositLimit.le(vault.balanceTokens)) {
-    vault.availableDepositLimit = BIGINT_ZERO;
-  } else {
-    vault.availableDepositLimit = vault.depositLimit.minus(vault.balanceTokens);
-  }
 
   vault.save();
 
@@ -128,9 +135,9 @@ function constructVaultUpdateEntity(
     }
   } else {
     if (!previousVaultUpdate) {
-      totalFees = providedFeesPaid;
+      totalFees = providedFeesPaid as BigInt;
     } else {
-      totalFees = previousVaultUpdate.totalFees.plus(providedFeesPaid);
+      totalFees = previousVaultUpdate.totalFees.plus(providedFeesPaid as BigInt);
     }
   }
 
@@ -155,7 +162,9 @@ export function firstDeposit(
   depositedAmount: BigInt,
   sharesMinted: BigInt,
   balancePosition: BigInt,
-  totalAssets: BigInt
+  totalAssets: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt
 ): VaultUpdate {
   log.debug('[VaultUpdate] First deposit', []);
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
@@ -164,28 +173,31 @@ export function firstDeposit(
   if (vaultUpdate === null) {
     vaultUpdate = createVaultUpdate(
       vaultUpdateId,
-      vault,
+      timestamp,
+      blockNumber,
       transaction,
+      vault,
       depositedAmount,
       BIGINT_ZERO, // tokensWithdrawn
       sharesMinted,
       BIGINT_ZERO, // sharesBurnt
       balancePosition,
       BIGINT_ZERO, // returnsGenerated
-      null, // feesPaid
-      null, // newManagementFee
-      null, // newPerformanceFee
-      null, // newRewards
-      null, // newHealthCheck
-      vault.availableDepositLimit,
+      null, // totalFees
+      null, // newProtocolFee
       vault.depositLimit,
-      vault.guardian,
-      vault.management,
-      vault.governance
+      vault.accountant,
+      vault.roleManager,
+      vault.depositLimitModule,
+      vault.withdrawLimitModule,
+      vault.minimumTotalIdle,
+      vault.profitMaxUnlockTime,
+      vault.totalDebtAmount,
+      vault.totalIdleAmount,
     );
   }
 
-  return vaultUpdate;
+  return vaultUpdate as VaultUpdate;
 }
 
 export function deposit(
@@ -194,7 +206,9 @@ export function deposit(
   depositedAmount: BigInt,
   sharesMinted: BigInt,
   balancePosition: BigInt,
-  totalAssets: BigInt
+  totalAssets: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt
 ): VaultUpdate {
   log.debug('[VaultUpdate] Deposit', []);
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
@@ -203,28 +217,31 @@ export function deposit(
   if (vaultUpdate === null) {
     vaultUpdate = createVaultUpdate(
       vaultUpdateId,
-      vault,
+      timestamp,
+      blockNumber,
       transaction,
+      vault,
       depositedAmount,
-      BIGINT_ZERO, // TokensWithdrawn
+      BIGINT_ZERO, // tokensWithdrawn
       sharesMinted,
-      BIGINT_ZERO, // SharesBurnt,
+      BIGINT_ZERO, // sharesBurnt
       balancePosition,
       BIGINT_ZERO, // returnsGenerated
-      null, // feesPaid
-      null, // newManagementFee
-      null, // newPerformanceFee
-      null, // newRewards
-      null, // newHealthCheck
-      vault.availableDepositLimit,
+      null, // totalFees
+      null, // newProtocolFee
       vault.depositLimit,
-      vault.guardian,
-      vault.management,
-      vault.governance
+      vault.accountant,
+      vault.roleManager,
+      vault.depositLimitModule,
+      vault.withdrawLimitModule,
+      vault.minimumTotalIdle,
+      vault.profitMaxUnlockTime,
+      vault.totalDebtAmount,
+      vault.totalIdleAmount,
     );
   }
 
-  return vaultUpdate;
+  return vaultUpdate as VaultUpdate;
 }
 
 export function withdraw(
@@ -233,30 +250,35 @@ export function withdraw(
   sharesBurnt: BigInt,
   transaction: Transaction,
   balancePosition: BigInt,
-  totalAssets: BigInt
+  totalAssets: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt
 ): VaultUpdate {
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
 
   let newVaultUpdate = createVaultUpdate(
     vaultUpdateId,
-    vault,
+    timestamp,
+    blockNumber,
     transaction,
+    vault,
     BIGINT_ZERO, // TokensDeposited
     withdrawnAmount,
     BIGINT_ZERO, // SharesMinted
     sharesBurnt,
     balancePosition,
     BIGINT_ZERO, // returnsGenerated
-    null, // feesPaid
-    null, // newManagementFee
-    null, // newPerformanceFee
-    null, // newRewards
-    null, // newHealthCheck
-    vault.availableDepositLimit,
+    null, // totalFees
+    null, // newProtocolFee
     vault.depositLimit,
-    vault.guardian,
-    vault.management,
-    vault.governance
+    vault.accountant,
+    vault.roleManager,
+    vault.depositLimitModule,
+    vault.withdrawLimitModule,
+    vault.minimumTotalIdle,
+    vault.profitMaxUnlockTime,
+    vault.totalDebtAmount,
+    vault.totalIdleAmount,
   );
   return newVaultUpdate;
 }
@@ -266,7 +288,9 @@ export function strategyReported(
   transaction: Transaction,
   balancePosition: BigInt,
   grossReturnsGenerated: BigInt,
-  currentTotalFees: BigInt
+  currentTotalFees: BigInt,
+  timestamp: BigInt,
+  blockNumber: BigInt,
 ): VaultUpdate {
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
 
@@ -281,8 +305,10 @@ export function strategyReported(
 
   let newVaultUpdate = createVaultUpdate(
     vaultUpdateId,
-    vault,
+    timestamp,
+    blockNumber,
     transaction,
+    vault,
     BIGINT_ZERO, // TokensDeposited
     BIGINT_ZERO, // TokensWithdrawn
     BIGINT_ZERO, // SharesMinted
@@ -290,144 +316,16 @@ export function strategyReported(
     balancePosition,
     netReturnsGenerated,
     feesPaidDuringReport,
+    null,
     vault.depositLimit,
     vault.accountant,
     vault.roleManager,
     vault.depositLimitModule,
-    vault.withdrawLimitModule
+    vault.withdrawLimitModule,
+    vault.minimumTotalIdle,
+    vault.profitMaxUnlockTime,
+    vault.totalDebtAmount,
+    vault.totalIdleAmount,
   );
   return newVaultUpdate;
-}
-
-export function performanceFeeUpdated(
-  vault: Vault,
-  transaction: Transaction,
-  balancePosition: BigInt,
-  performanceFee: BigInt,
-  totalAssets: BigInt
-): VaultUpdate {
-  let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
-
-  let newVaultUpdate = createVaultUpdate(
-    vaultUpdateId,
-    vault,
-    transaction,
-    BIGINT_ZERO, // TokensDeposited
-    BIGINT_ZERO, // TokensWithdrawn
-    BIGINT_ZERO, // SharesMinted
-    BIGINT_ZERO, // SharesBurnt
-    balancePosition,
-    BIGINT_ZERO, // returnsGenerated
-    null, // feesPaid
-    null, // newManagementFee
-    performanceFee,
-    null, // newRewards
-    null, // newHealthCheck
-    vault.availableDepositLimit,
-    vault.depositLimit,
-    vault.guardian,
-    vault.management,
-    vault.governance
-  );
-  return newVaultUpdate;
-}
-
-export function managementFeeUpdated(
-  vault: Vault,
-  transaction: Transaction,
-  balancePosition: BigInt,
-  managementFee: BigInt,
-  totalAssets: BigInt
-): VaultUpdate {
-  let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
-
-  let newVaultUpdate = createVaultUpdate(
-    vaultUpdateId,
-    vault,
-    transaction,
-    BIGINT_ZERO, // TokensDeposited
-    BIGINT_ZERO, // TokensWithdrawn
-    BIGINT_ZERO, // SharesMinted
-    BIGINT_ZERO, // SharesBurnt
-    balancePosition,
-    BIGINT_ZERO, // returnsGenerated
-    null, // feesPaid
-    managementFee,
-    null, // newPerformanceFee
-    null, // newRewards
-    null, // newHealthCheck
-    vault.availableDepositLimit,
-    vault.depositLimit,
-    vault.guardian,
-    vault.management,
-    vault.governance
-  );
-  return newVaultUpdate;
-}
-
-export function rewardsUpdated(
-  vault: Vault,
-  transaction: Transaction,
-  balancePosition: BigInt,
-  totalAssets: BigInt,
-  rewards: Address
-): VaultUpdate {
-  let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
-
-  let newVaultUpdate = createVaultUpdate(
-    vaultUpdateId,
-    vault,
-    transaction,
-    BIGINT_ZERO, // TokensDeposited
-    BIGINT_ZERO, // TokensWithdrawn
-    BIGINT_ZERO, // SharesMinted
-    BIGINT_ZERO, // SharesBurnt
-    balancePosition,
-    BIGINT_ZERO, // returnsGenerated
-    null, // feesPaid
-    null, // newManagementFee
-    null, // newPerformanceFee
-    rewards, // newRewards
-    null, // newHealthCheck
-    vault.availableDepositLimit,
-    vault.depositLimit,
-    vault.guardian,
-    vault.management,
-    vault.governance
-  );
-  return newVaultUpdate;
-}
-
-export function healthCheckUpdated(
-  vault: Vault,
-  transaction: Transaction,
-  healthCheck: string | null
-): void {
-  let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
-  let latestVaultUpdate: VaultUpdate | null;
-  if (vault.latestUpdate !== null) {
-    latestVaultUpdate = VaultUpdate.load(vault.latestUpdate!);
-  }
-
-  let newVaultUpdate = createVaultUpdate(
-    vaultUpdateId,
-    vault,
-    transaction,
-    BIGINT_ZERO, // TokensDeposited
-    BIGINT_ZERO, // TokensWithdrawn
-    BIGINT_ZERO, // SharesMinted
-    BIGINT_ZERO, // SharesBurnt
-    latestVaultUpdate!.balancePosition,
-    BIGINT_ZERO, // returnsGenerated
-    null, // feesPaid
-    null, // newManagementFee
-    null, // newPerformanceFee
-    null, // newRewards
-    healthCheck,
-    vault.availableDepositLimit,
-    vault.depositLimit,
-    vault.guardian,
-    vault.management,
-    vault.governance
-  );
 }

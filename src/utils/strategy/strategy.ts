@@ -6,7 +6,6 @@ import {
   Vault,
 } from '../../../generated/schema';
 import { FathomVault } from '../../../generated/FathomVault/FathomVault';
-import { bigIntExponential } from '../../../tests/util';
 import { booleanToString, getTimeInMillis } from '../commons';
 import { BIGINT_ZERO } from '../constants';
 import * as strategyReportLibrary from './strategy-report';
@@ -50,9 +49,9 @@ export function createAndGet(
     let vaultInstance = Vault.load(vault.toHexString());
     if (vaultInstance != null) {
       // Add the new strategy to the withdrawl queue of the vault
-      let withdrawlQueue = vaultInstance.withdrawalQueue;
+      let withdrawlQueue = vaultInstance.defaultQueue;
       withdrawlQueue.push(strategyAddress.toHexString());
-      vaultInstance.withdrawalQueue = withdrawlQueue;
+      vaultInstance.defaultQueue = withdrawlQueue;
 
       // Add strategy ids to vault
       let strategyIds = vaultInstance.strategyIds;
@@ -61,7 +60,7 @@ export function createAndGet(
       vaultInstance.save();
     }
   }
-  return strategy;
+  return strategy as Strategy;
 }
 
 export function createReport(
@@ -125,52 +124,6 @@ export function createReport(
       [strategyId]
     );
     return null;
-  }
-}
-
-export function emergencyExitEnabled(
-  strategyAddress: Address,
-  transaction: Transaction
-): void {
-  let txHash = transaction.hash.toHexString();
-  log.info(
-    '[Strategy Mapping] Handle EmergencyExitEnabled strategy {} and TxHash {}',
-    [strategyAddress.toHexString(), txHash]
-  );
-  let strategyId = buildId(strategyAddress);
-  let strategy = Strategy.load(strategyId);
-  if (strategy !== null) {
-    strategy.emergencyExit = true;
-    strategy.save();
-  } else {
-    log.warning('EmergencyExitEnabled Strategy {} not found in TxHash {}', [
-      strategyAddress.toHexString(),
-      txHash,
-    ]);
-  }
-}
-
-export function updatedKeeper(
-  strategyAddress: Address,
-  keeper: Address,
-  transaction: Transaction
-): void {
-  let txHash = transaction.hash.toHexString();
-  log.info(
-    '[Strategy Mapping] Handle UpdatedKeeper {} strategy {} and TxHash {}',
-    [keeper.toHexString(), strategyAddress.toHexString(), txHash]
-  );
-  let strategyId = buildId(strategyAddress);
-  let strategy = Strategy.load(strategyId);
-  if (strategy !== null) {
-    strategy.keeper = keeper;
-    strategy.save();
-  } else {
-    log.warning('UpdatedKeeper {} Strategy {} not found in TxHash {}', [
-      keeper.toHexString(),
-      strategyAddress.toHexString(),
-      txHash,
-    ]);
   }
 }
 
@@ -262,24 +215,24 @@ export function updateMaxDebt(
     strategy.save();
   }
 
-export function updatePerformanceFee(
+export function updateDebtPurchased(
   vaultAddress: Address,
   strategyAddress: Address,
-  performanceFee: BigInt,
+  amount: BigInt,
   transaction: Transaction
 ): void {
   let strategyId = buildId(strategyAddress);
   let txHash = transaction.hash.toHexString();
-  log.info('[Strategy Mapping] Update performanceFee for strategy {} tx {}', [
-    strategyId,
-    txHash,
-  ]);
+  log.info(
+    '[Strategy Mapping] Update Debt Purchased for strategy {} tx {}',
+    [strategyId, txHash]
+  );
 
   let vaultId = vaultAddress.toHexString();
   let vault = Vault.load(vaultId);
   if (!vault) {
     log.critical(
-      '[Strategy Mapping] Vault entity does not exist: {} performanceFee tx {}',
+      '[Strategy Mapping] Vault entity does not exist: {} update debt purchased tx {}',
       [vaultId, txHash]
     );
     return;
@@ -288,7 +241,7 @@ export function updatePerformanceFee(
   let strategy = Strategy.load(strategyId);
   if (!strategy) {
     log.critical(
-      '[Strategy Mapping] Strategy entity does not exist: {} performanceFee tx {}',
+      '[Strategy Mapping] Strategy entity does not exist: {} update debt purchased tx {}',
       [strategyId, txHash]
     );
     return;
@@ -302,6 +255,9 @@ export function updatePerformanceFee(
     return;
   }
 
-  strategy.performanceFeeBps = performanceFee;
+  strategy.currentDebt = strategy.currentDebt.minus(amount);
+  vault.totalDebtAmount = vault.totalDebtAmount.minus(amount);
+  vault.totalIdleAmount = vault.totalIdleAmount.plus(amount);
   strategy.save();
+  vault.save();
 }

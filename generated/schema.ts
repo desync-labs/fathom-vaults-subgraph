@@ -463,22 +463,13 @@ export class Vault extends Entity {
     this.set("depositLimit", Value.fromBigInt(value));
   }
 
-  get availableDepositLimit(): BigInt {
-    let value = this.get("availableDepositLimit");
-    return value.toBigInt();
-  }
-
-  set availableDepositLimit(value: BigInt) {
-    this.set("availableDepositLimit", Value.fromBigInt(value));
-  }
-
-  get emergencyShutdown(): boolean {
-    let value = this.get("emergencyShutdown");
+  get shutdown(): boolean {
+    let value = this.get("shutdown");
     return value.toBoolean();
   }
 
-  set emergencyShutdown(value: boolean) {
-    this.set("emergencyShutdown", Value.fromBoolean(value));
+  set shutdown(value: boolean) {
+    this.set("shutdown", Value.fromBoolean(value));
   }
 
   get activationBlockNumber(): BigInt {
@@ -488,6 +479,42 @@ export class Vault extends Entity {
 
   set activationBlockNumber(value: BigInt) {
     this.set("activationBlockNumber", Value.fromBigInt(value));
+  }
+
+  get minimumTotalIdle(): BigInt {
+    let value = this.get("minimumTotalIdle");
+    return value.toBigInt();
+  }
+
+  set minimumTotalIdle(value: BigInt) {
+    this.set("minimumTotalIdle", Value.fromBigInt(value));
+  }
+
+  get profitMaxUnlockTime(): BigInt {
+    let value = this.get("profitMaxUnlockTime");
+    return value.toBigInt();
+  }
+
+  set profitMaxUnlockTime(value: BigInt) {
+    this.set("profitMaxUnlockTime", Value.fromBigInt(value));
+  }
+
+  get totalDebtAmount(): BigInt {
+    let value = this.get("totalDebtAmount");
+    return value.toBigInt();
+  }
+
+  set totalDebtAmount(value: BigInt) {
+    this.set("totalDebtAmount", Value.fromBigInt(value));
+  }
+
+  get totalIdleAmount(): BigInt {
+    let value = this.get("totalIdleAmount");
+    return value.toBigInt();
+  }
+
+  set totalIdleAmount(value: BigInt) {
+    this.set("totalIdleAmount", Value.fromBigInt(value));
   }
 }
 
@@ -698,6 +725,51 @@ export class VaultUpdate extends Entity {
 
   set withdrawLimitModule(value: Bytes) {
     this.set("withdrawLimitModule", Value.fromBytes(value));
+  }
+
+  get shutdown(): boolean {
+    let value = this.get("shutdown");
+    return value.toBoolean();
+  }
+
+  set shutdown(value: boolean) {
+    this.set("shutdown", Value.fromBoolean(value));
+  }
+
+  get minimumTotalIdle(): BigInt {
+    let value = this.get("minimumTotalIdle");
+    return value.toBigInt();
+  }
+
+  set minimumTotalIdle(value: BigInt) {
+    this.set("minimumTotalIdle", Value.fromBigInt(value));
+  }
+
+  get profitMaxUnlockTime(): BigInt {
+    let value = this.get("profitMaxUnlockTime");
+    return value.toBigInt();
+  }
+
+  set profitMaxUnlockTime(value: BigInt) {
+    this.set("profitMaxUnlockTime", Value.fromBigInt(value));
+  }
+
+  get totalDebtAmount(): BigInt {
+    let value = this.get("totalDebtAmount");
+    return value.toBigInt();
+  }
+
+  set totalDebtAmount(value: BigInt) {
+    this.set("totalDebtAmount", Value.fromBigInt(value));
+  }
+
+  get totalIdleAmount(): BigInt {
+    let value = this.get("totalIdleAmount");
+    return value.toBigInt();
+  }
+
+  set totalIdleAmount(value: BigInt) {
+    this.set("totalIdleAmount", Value.fromBigInt(value));
   }
 }
 
@@ -1085,15 +1157,6 @@ export class Transfer extends Entity {
     this.set("tokenAmount", Value.fromBigInt(value));
   }
 
-  get tokenAmountUsdc(): BigInt {
-    let value = this.get("tokenAmountUsdc");
-    return value.toBigInt();
-  }
-
-  set tokenAmountUsdc(value: BigInt) {
-    this.set("tokenAmountUsdc", Value.fromBigInt(value));
-  }
-
   get timestamp(): BigInt {
     let value = this.get("timestamp");
     return value.toBigInt();
@@ -1119,24 +1182,6 @@ export class Transfer extends Entity {
 
   set transaction(value: string) {
     this.set("transaction", Value.fromString(value));
-  }
-
-  get isFeeToTreasury(): boolean {
-    let value = this.get("isFeeToTreasury");
-    return value.toBoolean();
-  }
-
-  set isFeeToTreasury(value: boolean) {
-    this.set("isFeeToTreasury", Value.fromBoolean(value));
-  }
-
-  get isFeeToStrategy(): boolean {
-    let value = this.get("isFeeToStrategy");
-    return value.toBoolean();
-  }
-
-  set isFeeToStrategy(value: boolean) {
-    this.set("isFeeToStrategy", Value.fromBoolean(value));
   }
 }
 

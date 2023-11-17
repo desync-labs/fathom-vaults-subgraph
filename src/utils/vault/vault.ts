@@ -2,7 +2,6 @@ import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
 import {
   AccountVaultPosition,
   AccountVaultPositionUpdate,
-  Registry,
   Strategy,
   StrategyReport,
   Transaction,
@@ -25,11 +24,8 @@ import * as accountVaultPositionLibrary from '../account/vault-position';
 import * as vaultUpdateLibrary from './vault-update';
 import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
-import * as registryLibrary from '../registry/registry';
 import { updateVaultDayData } from './vault-day-data';
 import { booleanToString, removeElementFromArray } from '../commons';
-import { getOrCreateHealthCheck } from '../healthCheck';
-import { Strategy as StrategyContract } from '../../../generated/templates/Vault/Strategy';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -70,7 +66,7 @@ const createNewVaultFromAddress = (
     : tryDepositLimit.value;
 
   let tryEmergencyShutdown = vaultContract.try_shutdown();
-  vaultEntity.emergencyShutdown = tryEmergencyShutdown.reverted
+  vaultEntity.shutdown = tryEmergencyShutdown.reverted
     ? false
     : tryEmergencyShutdown.value;
 
@@ -99,88 +95,7 @@ export function getOrCreate(
     }
   }
 
-  return vault;
-}
-
-export function create(
-  registry: Registry,
-  transaction: Transaction,
-  vault: Address,
-  classification: string,
-  apiVersion: string,
-  createTemplate: boolean,
-  vaultType: BigInt
-): Vault {
-  log.info('[Vault] Create vault {}', [vault.toHexString()]);
-  let id = vault.toHexString();
-  let vaultEntity = Vault.load(id);
-  if (vaultEntity == null) {
-    vaultEntity = createNewVaultFromAddress(vault, transaction);
-    vaultEntity.strategyIds = [];
-    vaultEntity.type = vaultType;
-    vaultEntity.availableDepositLimit = BIGINT_ZERO;
-    vaultEntity.classification = classification;
-    vaultEntity.registry = registry.id;
-    vaultEntity.apiVersion = apiVersion;
-    vaultEntity.isTemplateListening = createTemplate;
-    if (createTemplate) {
-      VaultTemplate.create(vault);
-    }
-
-    log.info('NewVault {} - createTemplate? {} - IsTemplateListening? {}', [
-      vault.toHexString(),
-      booleanToString(createTemplate),
-      booleanToString(vaultEntity.isTemplateListening),
-    ]);
-  } else {
-    // NOTE: vault is experimental but being endorsed
-    if (vaultEntity.classification !== classification) {
-      vaultEntity.classification = classification;
-    }
-    log.info('NewVault {} - createTemplate? {} - IsTemplateListening? {}', [
-      vault.toHexString(),
-      booleanToString(createTemplate),
-      booleanToString(vaultEntity.isTemplateListening),
-    ]);
-    if (!vaultEntity.isTemplateListening && createTemplate) {
-      vaultEntity.isTemplateListening = true;
-      VaultTemplate.create(vault);
-    }
-  }
-  vaultEntity.save();
-  return vaultEntity;
-}
-
-export function release(
-  vault: Address,
-  apiVersion: string,
-  releaseId: BigInt,
-  event: ethereum.Event,
-  transaction: Transaction
-): Vault | null {
-  let registryId = event.address.toHexString();
-  let registry = Registry.load(registryId);
-  if (registry !== null) {
-    log.info('[Vault] Registry {} found in vault releasing: {}', [
-      registryId,
-      vault.toHexString(),
-    ]);
-    return create(
-      registry,
-      transaction,
-      vault,
-      'Released',
-      apiVersion,
-      DO_CREATE_VAULT_TEMPLATE,
-      REGISTRY_V3_VAULT_TYPE_LEGACY
-    ) as Vault;
-  } else {
-    log.warning('[Vault] Registry {} does not found in vault releasing: {}', [
-      registryId,
-      vault.toHexString(),
-    ]);
-  }
-  return null;
+  return vault as Vault;
 }
 
 export function tag(vault: Address, tag: string): Vault | null {
@@ -203,7 +118,8 @@ export function deposit(
   receiver: Address,
   depositedAmount: BigInt,
   sharesMinted: BigInt,
-  timestamp: BigInt
+  timestamp: BigInt,
+  blockNumber: BigInt
 ): void {
   log.debug(
     '[Vault] Deposit vault: {} receiver: {} depositAmount: {} sharesMinted: {}',
@@ -214,7 +130,7 @@ export function deposit(
       sharesMinted.toString(),
     ]
   );
-  let vaultContract = VaultContract.bind(vaultAddress);
+  let vaultContract = FathomVault.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(receiver);
   let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
 
@@ -245,7 +161,9 @@ export function deposit(
       depositedAmount,
       sharesMinted,
       balancePosition,
-      totalAssets
+      totalAssets,
+      timestamp,
+      blockNumber
     );
   } else {
     vaultUpdate = vaultUpdateLibrary.deposit(
@@ -254,7 +172,9 @@ export function deposit(
       depositedAmount,
       sharesMinted,
       balancePosition,
-      totalAssets
+      totalAssets,
+      timestamp,
+      blockNumber
     );
   }
 }
@@ -264,7 +184,7 @@ export function calculateAmountDeposited(
   vaultAddress: Address,
   sharesMinted: BigInt
 ): BigInt {
-  let vaultContract = VaultContract.bind(vaultAddress);
+  let vaultContract = FathomVault.bind(vaultAddress);
   let totalAssets = getTotalAssets(vaultAddress);
   let totalSupply = vaultContract.totalSupply();
   let amount = totalSupply.isZero()
@@ -294,9 +214,10 @@ export function withdraw(
   withdrawnAmount: BigInt,
   sharesBurnt: BigInt,
   transaction: Transaction,
-  timestamp: BigInt
+  timestamp: BigInt,
+  blockNumber: BigInt
 ): void {
-  let vaultContract = VaultContract.bind(vaultAddress);
+  let vaultContract = FathomVault.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(from);
   let balancePosition = getBalancePosition(vaultContract);
   let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
@@ -395,7 +316,9 @@ export function withdraw(
         sharesBurnt,
         transaction,
         balancePosition,
-        getTotalAssets(vaultAddress)
+        getTotalAssets(vaultAddress),
+        timestamp,
+        blockNumber
       );
     }
   } else {
@@ -442,26 +365,15 @@ export function transfer(
     shareAmount,
     transaction
   );
-
-  if (vault != null) {
-    for (let i = 0; i < vault.strategyIds.length; i++) {
-      let loadedStrategy = Strategy.load(vault.strategyIds[i]);
-      if (loadedStrategy != null) {
-        let strategyContract = StrategyContract.bind(
-          Address.fromString(vault.strategyIds[i])
-        );
-        loadedStrategy.delegatedAssets = strategyContract.delegatedAssets();
-        loadedStrategy.save();
-      }
-    }
-  }
 }
 
 export function strategyReported(
   transaction: Transaction,
   strategyReport: StrategyReport,
   vaultContract: FathomVault,
-  vaultAddress: Address
+  vaultAddress: Address,
+  timestamp: BigInt,
+  blockNumber: BigInt,
 ): void {
   log.info('[Vault] Strategy reported for vault {} at TX ', [
     vaultAddress.toHexString(),
@@ -485,125 +397,10 @@ export function strategyReported(
     transaction,
     balancePosition,
     grossReturnsGenerated,
-    currentTotalFees
+    currentTotalFees,
+    timestamp,
+    blockNumber
   );
-}
-
-export function performanceFeeUpdated(
-  vaultAddress: Address,
-  ethTransaction: Transaction,
-  vaultContract: VaultContract,
-  performanceFee: BigInt
-): void {
-  let vault = Vault.load(vaultAddress.toHexString());
-  if (vault !== null) {
-    log.info('Vault performance fee updated. Address: {}, To: {}', [
-      vaultAddress.toHexString(),
-      performanceFee.toString(),
-    ]);
-
-    let vaultUpdate = vaultUpdateLibrary.performanceFeeUpdated(
-      vault as Vault,
-      ethTransaction,
-      getBalancePosition(vaultContract),
-      performanceFee,
-      getTotalAssets(vaultAddress)
-    ) as VaultUpdate;
-    vault.latestUpdate = vaultUpdate.id;
-
-    vault.performanceFeeBps = performanceFee.toI32();
-    vault.save();
-  } else {
-    log.warning('Failed to update performance fee of vault {} to {}', [
-      vaultAddress.toHexString(),
-      performanceFee.toString(),
-    ]);
-  }
-}
-
-export function managementFeeUpdated(
-  vaultAddress: Address,
-  ethTransaction: Transaction,
-  vaultContract: VaultContract,
-  managementFee: BigInt
-): void {
-  let vault = Vault.load(vaultAddress.toHexString());
-  if (vault !== null) {
-    log.info('Vault management fee updated. Address: {}, To: {}', [
-      vaultAddress.toHexString(),
-      managementFee.toString(),
-    ]);
-
-    let vaultUpdate = vaultUpdateLibrary.managementFeeUpdated(
-      vault as Vault,
-      ethTransaction,
-      getBalancePosition(vaultContract),
-      managementFee,
-      getTotalAssets(vaultAddress)
-    ) as VaultUpdate;
-    vault.latestUpdate = vaultUpdate.id;
-
-    vault.managementFeeBps = managementFee.toI32();
-    vault.save();
-  } else {
-    log.warning('Failed to update management fee of vault {} to {}', [
-      vaultAddress.toHexString(),
-      managementFee.toString(),
-    ]);
-  }
-}
-
-export function strategyAddedToQueue(
-  strategyAddress: Address,
-  ethTransaction: Transaction,
-  event: ethereum.Event
-): void {
-  let id = strategyAddress.toHexString();
-  let txHash = ethTransaction.hash.toHexString();
-  log.info('Strategy {} added to queue at tx {}', [id, txHash]);
-  let strategy = Strategy.load(id);
-  if (strategy !== null) {
-    strategy.inQueue = true;
-    strategy.save();
-
-    let vault = Vault.load(event.address.toHexString());
-    if (vault != null) {
-      //Add the new strategy to the withdrawl queue
-      let withdrawlQueue = vault.withdrawalQueue;
-      //Only add strategy to queue when its not was previously added
-      if (!withdrawlQueue.includes(strategy.address.toHexString())) {
-        withdrawlQueue.push(strategy.address.toHexString());
-      }
-      vault.withdrawalQueue = withdrawlQueue;
-
-      vault.save();
-    }
-  }
-}
-
-export function strategyRemovedFromQueue(
-  strategyAddress: Address,
-  ethTransaction: Transaction,
-  event: ethereum.Event
-): void {
-  let id = strategyAddress.toHexString();
-  let txHash = ethTransaction.hash.toHexString();
-  let strategy = Strategy.load(id);
-  log.info('Strategy {} removed to queue at tx {}', [id, txHash]);
-  if (strategy !== null) {
-    strategy.inQueue = false;
-    strategy.save();
-
-    let vault = Vault.load(event.address.toHexString());
-    if (vault != null) {
-      vault.withdrawalQueue = removeElementFromArray(
-        vault.withdrawalQueue,
-        strategy.address.toHexString()
-      );
-
-      vault.save();
-    }
-  }
 }
 
 export function UpdateDefaultQueue(
@@ -703,32 +500,11 @@ function getBalancePosition(vaultContract: FathomVault): BigInt {
     );
   }
   // @ts-ignore
-  let decimals = u8(vaultContract.decimals().toI32());
+  let decimals = u8(vaultContract.decimals());
   return totalAssets.times(pricePerShare).div(BigInt.fromI32(10).pow(decimals));
 }
 
-export function createCustomVaultIfNeeded(
-  vaultAddress: Address,
-  registryAddress: Address,
-  classification: string,
-  apiVersion: string,
-  transaction: Transaction,
-  createTemplate: boolean
-): Vault {
-  let registry = registryLibrary.getOrCreate(registryAddress, transaction);
-  // It is created only if it doesn't exist.
-  return create(
-    registry,
-    transaction,
-    vaultAddress,
-    classification,
-    apiVersion,
-    createTemplate,
-    REGISTRY_V3_VAULT_TYPE_LEGACY
-  );
-}
-
-export function handleUpdateRoleManager(
+export function updateRoleManager(
   vaultAddress: Address,
   roleManager: Address,
   transaction: Transaction
@@ -759,7 +535,7 @@ export function handleUpdateRoleManager(
   }
 }
 
-export function handleUpdateAccountant(
+export function updateAccountant(
   vaultAddress: Address,
   accountantAddress: Address,
   transaction: Transaction
@@ -787,13 +563,12 @@ export function handleUpdateAccountant(
   }
 }
 
-export function handleUpdateDepositLimit(
+export function updateDepositLimit(
   vaultAddress: Address,
   depositLimit: BigInt,
   transaction: Transaction
 ): void {
   let vault = Vault.load(vaultAddress.toHexString());
-  let vaultContract = FathomVault.bind(vaultAddress);
   if (vault === null) {
     log.warning(
       'Failed to update vault deposit limit, vault does not exist. Vault address: {} deposit limit: {}  Txn hash: {}',
@@ -815,52 +590,158 @@ export function handleUpdateDepositLimit(
     );
 
     vault.depositLimit = depositLimit;
-    let tryAvailableDepositLimit = vaultContract.try_availableDepositLimit();
-    let availableDepositLimit = tryAvailableDepositLimit.reverted
-      ? BIGINT_ZERO
-      : tryAvailableDepositLimit.value;
-    vault.availableDepositLimit = availableDepositLimit;
-    if (
-      availableDepositLimit != BIGINT_ZERO &&
-      vault.depositLimit > availableDepositLimit
-    ) {
-      let tryTotalAssets = vaultContract.try_totalAssets();
-      let totalAssets = tryTotalAssets.reverted
-        ? BIGINT_ZERO
-        : tryTotalAssets.value;
-      vault.availableDepositLimit = vault.depositLimit.minus(totalAssets);
-    }
     vault.save();
   }
 }
 
-export function handleEmergencyShutdown(
+export function updateMinimumTotalIdle(
   vaultAddress: Address,
-  emergencyShutdown: boolean,
+  minimumTotalIdle: BigInt,
   transaction: Transaction
 ): void {
-  let vault = Vault.load(buildId(vaultAddress));
+  let vault = Vault.load(vaultAddress.toHexString());
   if (vault === null) {
     log.warning(
-      'Failed to update emergency shutdown, vault does not exist. Vault address: {} emergencyShutdown: {}  Txn hash: {}',
+      'Failed to update vault minimum total idle, vault does not exist. Vault address: {} minimum total idle: {}  Txn hash: {}',
       [
-        buildId(vaultAddress),
-        emergencyShutdown.toString(),
+        vaultAddress.toHexString(),
+        minimumTotalIdle.toString(),
         transaction.hash.toHexString(),
       ]
     );
     return;
   } else {
     log.info(
-      'Vault emergency shutdown updated. Address: {}, emergencyShutdown: {}, on Txn hash: {}',
+      'Vault minimum total idle updated. Address: {}, To: {}, on Txn hash: {}',
       [
-        buildId(vaultAddress),
-        emergencyShutdown.toString(),
+        vaultAddress.toHexString(),
+        minimumTotalIdle.toString(),
         transaction.hash.toHexString(),
       ]
     );
 
-    vault.emergencyShutdown = emergencyShutdown;
+    vault.minimumTotalIdle = minimumTotalIdle;
+    vault.save();
+  }
+}
+
+export function updateProfitMaxUnlockTime(
+  vaultAddress: Address,
+  profitMaxUnlockTime: BigInt,
+  transaction: Transaction
+): void {
+  let vault = Vault.load(vaultAddress.toHexString());
+  if (vault === null) {
+    log.warning(
+      'Failed to update vault profit max unlock time, vault does not exist. Vault address: {} profit max unlock time: {}  Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        profitMaxUnlockTime.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+    return;
+  } else {
+    log.info(
+      'Vault profit max unlock time updated. Address: {}, To: {}, on Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        profitMaxUnlockTime.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+
+    vault.profitMaxUnlockTime = profitMaxUnlockTime;
+    vault.save();
+  }
+}
+
+export function shutdown(
+  vaultAddress: Address,
+  transaction: Transaction
+): void {
+  let vault = Vault.load(buildId(vaultAddress));
+  if (vault === null) {
+    log.warning(
+      'Failed to shutdown, vault does not exist. Vault address: {} Txn hash: {}',
+      [
+        buildId(vaultAddress),
+        transaction.hash.toHexString(),
+      ]
+    );
+    return;
+  } else {
+    log.info(
+      'Vault shutdown. Address: {} on Txn hash: {}',
+      [
+        buildId(vaultAddress),
+        transaction.hash.toHexString(),
+      ]
+    );
+
+    vault.shutdown = true;
+    vault.save();
+  }
+}
+
+export function updateDepositLimitModule(
+  vaultAddress: Address,
+  depositLimitModule: Address,
+  transaction: Transaction
+): void {
+  let vault = Vault.load(vaultAddress.toHexString());
+  if (vault === null) {
+    log.warning(
+      'Failed to update deposit limit module, vault does not exist. Vault address: {} deposit limit module: {}  Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        depositLimitModule.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+    return;
+  } else {
+    log.info(
+      'Vault deposit limit module updated. Address: {}, To: {}, on Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        depositLimitModule.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+
+    vault.depositLimitModule = depositLimitModule;
+    vault.save();
+  }
+}
+
+export function updateWithdrawLimitModule(
+  vaultAddress: Address,
+  withdrawLimitModule: Address,
+  transaction: Transaction
+): void {
+  let vault = Vault.load(vaultAddress.toHexString());
+  if (vault === null) {
+    log.warning(
+      'Failed to update withdraw limit module, vault does not exist. Vault address: {} withdraw limit module: {}  Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        withdrawLimitModule.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+    return;
+  } else {
+    log.info(
+      'Vault withdraw limit module updated. Address: {}, To: {}, on Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        withdrawLimitModule.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+
+    vault.withdrawLimitModule = withdrawLimitModule;
     vault.save();
   }
 }

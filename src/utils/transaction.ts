@@ -86,5 +86,5 @@ function _getOrCreateTransaction(
     transaction.save();
   }
 
-  return transaction;
+  return transaction as Transaction;
 }

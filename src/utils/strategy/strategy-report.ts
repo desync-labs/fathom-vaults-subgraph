@@ -32,5 +32,5 @@ export function getOrCreate(
     strategyReport.totalRefunds = totalRefunds;
     strategyReport.save();
   }
-  return strategyReport;
+  return strategyReport as StrategyReport;
 }

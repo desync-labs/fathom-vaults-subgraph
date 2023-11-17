@@ -2,20 +2,20 @@ specVersion: 0.0.4
 description: FathomVault
 repository: https://github.com/into-the-fathom/fathom-vaults-subgraph
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum/contract
     name: FathomVault
     network: mainnet
     source:
       abi: FathomVault
-      address: '0xbe401B027d4D21716c6bd5Be351520E880D764dB'
+      address: "0xbe401B027d4D21716c6bd5Be351520E880D764dB"
       startBlock: 56840754
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
       language: wasm/assemblyscript
-      file: ./src/mappings/vaultMappings.ts
+      file: FathomVault/FathomVault.wasm
       entities:
         - Transaction
         - Token
@@ -33,7 +33,7 @@ dataSources:
         - VaultDayData
       abis:
         - name: FathomVault
-          file: ./abis/FathomVault.json
+          file: FathomVault/abis/FathomVault.json
       eventHandlers:
         - event: StrategyChanged(indexed address,uint8)
           handler: handleStrategyChanged
@@ -83,7 +83,7 @@ templates:
       kind: ethereum/events
       apiVersion: 0.0.6
       language: wasm/assemblyscript
-      file: ./src/mappings/vaultMappings.ts
+      file: FathomVault/FathomVault.wasm
       entities:
         - Transaction
         - Token
@@ -101,7 +101,7 @@ templates:
         - VaultDayData
       abis:
         - name: FathomVault
-          file: ./abis/FathomVault.json
+          file: FathomVault/abis/FathomVault.json
       eventHandlers:
         - event: StrategyChanged(indexed address,uint8)
           handler: handleStrategyChanged
