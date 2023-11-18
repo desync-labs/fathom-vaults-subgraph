@@ -9,9 +9,9 @@
     "build": "graph build",
     "test": "graph test",
 
-    "create:local": "graph create --node http://localhost:8020/ dex-subgraph subgraph.yaml",
-    "remove:local": "graph remove --node http://localhost:8020/ dex-subgraph subgraph.yaml",
-    "deploy:local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001  dex-subgraph subgraph.yaml",
+    "create:local": "graph create --node http://localhost:8020/ vaults-subgraph subgraph.yaml",
+    "remove:local": "graph remove --node http://localhost:8020/ vaults-subgraph subgraph.yaml",
+    "deploy:local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001  vaults-subgraph subgraph.yaml",
 
     "prep:addresses:apothem:dev": "ts-node config/apothemAddressScript.ts dev && mustache ./config/generatedAddresses.json ./config/addresses.template.ts > ./config/addresses.ts",
     "prep:apothem:dev": "yarn clean && yarn prep:addresses:apothem:dev && mustache ./config/generatedAddresses.json subgraph.template.yaml > subgraph.yaml && graph codegen && graph build",
