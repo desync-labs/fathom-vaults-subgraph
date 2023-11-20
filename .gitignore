@@ -1,1 +1,8 @@
 node_modules/
+build/
+src/types/
+.DS_STORE
+yarn-error.log
+config/addresses.ts
+config/generatedAddresses.json
+subgraph.yaml
