@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: FathomVault
-    network: mainnet
+    network: apothem
     source:
       abi: FathomVault
-      address: '0xbe401B027d4D21716c6bd5Be351520E880D764dB'
-      startBlock: 56840754
+      address: '{{FathomVault}}'
+      startBlock: {{blockNumber}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -76,7 +76,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: FathomVault
-    network: mainnet
+    network: apothem
     source:
       abi: FathomVault
     mapping:
