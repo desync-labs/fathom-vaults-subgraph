@@ -35,41 +35,41 @@ dataSources:
         - name: FathomVault
           file: ./abis/FathomVault.json
       eventHandlers:
-        - event: StrategyChanged(indexed address,uint8)
-          handler: handleStrategyChanged
-        - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256)
-          handler: handleStrategyReported
-        - event: DebtUpdated(indexed address,uint256,uint256)
-          handler: handleDebtUpdated
-        - event: RoleSet(indexed address,bytes32)
-          handler: handleRoleSet
-        - event: UpdateRoleManager(indexed address)
-          handler: handleUpdateRoleManager
-        - event: UpdateAccountant(indexed address)
-          handler: handleUpdateAccountant
-        - event: UpdateDefaultQueue(address[])
-          handler: handleUpdateDefaultQueue
-        - event: UpdateUseDefaultQueue(bool)
-          handler: handleUpdateUseDefaultQueue
-        - event: UpdatedMaxDebtForStrategy(indexed address,indexed address,uint256)
-          handler: handleUpdatedMaxDebtForStrategy
-        - event: UpdateDepositLimit(uint256)
-          handler: handleUpdateDepositLimit
-        - event: UpdateMinimumTotalIdle(uint256)
-          handler: handleUpdateMinimumTotalIdle
-        - event: UpdateProfitMaxUnlockTime(uint256)
-          handler: handleUpdateProfitMaxUnlockTime
-        - event: DebtPurchased(indexed address,uint256)
-          handler: handleDebtPurchased
-        - event: Shutdown()
-          handler: handleShutdown
-        - event: UpdateDepositLimitModule(indexed address)
-          handler: handleUpdateDepositLimitModule
-        - event: UpdateWithdrawLimitModule(indexed address)
-          handler: handleUpdateWithdrawLimitModule
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
+        # - event: StrategyChanged(indexed address,uint8)
+        #   handler: handleStrategyChanged
+        # - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256)
+        #   handler: handleStrategyReported
+        # - event: DebtUpdated(indexed address,uint256,uint256)
+        #   handler: handleDebtUpdated
+        # - event: RoleSet(indexed address,bytes32)
+        #   handler: handleRoleSet
+        # - event: UpdateRoleManager(indexed address)
+        #   handler: handleUpdateRoleManager
+        # - event: UpdateAccountant(indexed address)
+        #   handler: handleUpdateAccountant
+        # - event: UpdateDefaultQueue(address[])
+        #   handler: handleUpdateDefaultQueue
+        # - event: UpdateUseDefaultQueue(bool)
+        #   handler: handleUpdateUseDefaultQueue
+        # - event: UpdatedMaxDebtForStrategy(indexed address,indexed address,uint256)
+        #   handler: handleUpdatedMaxDebtForStrategy
+        # - event: UpdateDepositLimit(uint256)
+        #   handler: handleUpdateDepositLimit
+        # - event: UpdateMinimumTotalIdle(uint256)
+        #   handler: handleUpdateMinimumTotalIdle
+        # - event: UpdateProfitMaxUnlockTime(uint256)
+        #   handler: handleUpdateProfitMaxUnlockTime
+        # - event: DebtPurchased(indexed address,uint256)
+        #   handler: handleDebtPurchased
+        # - event: Shutdown()
+        #   handler: handleShutdown
+        # - event: UpdateDepositLimitModule(indexed address)
+        #   handler: handleUpdateDepositLimitModule
+        # - event: UpdateWithdrawLimitModule(indexed address)
+        #   handler: handleUpdateWithdrawLimitModule
+        # - event: Transfer(indexed address,indexed address,uint256)
+        #   handler: handleTransfer
         - event: Deposit(indexed address,indexed address,uint256,uint256)
           handler: handleDeposit
-        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
-          handler: handleWithdraw
+        # - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+        #   handler: handleWithdraw
