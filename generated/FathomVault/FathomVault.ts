@@ -577,6 +577,14 @@ export class FathomVault__processReportResult {
     map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
     return map;
   }
+
+  getValue0(): BigInt {
+    return this.value0;
+  }
+
+  getValue1(): BigInt {
+    return this.value1;
+  }
 }
 
 export class FathomVault__strategiesResult {
@@ -599,6 +607,22 @@ export class FathomVault__strategiesResult {
     map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
     map.set("value3", ethereum.Value.fromUnsignedBigInt(this.value3));
     return map;
+  }
+
+  getActivation(): BigInt {
+    return this.value0;
+  }
+
+  getLastReport(): BigInt {
+    return this.value1;
+  }
+
+  getCurrentDebt(): BigInt {
+    return this.value2;
+  }
+
+  getMaxDebt(): BigInt {
+    return this.value3;
   }
 }
 

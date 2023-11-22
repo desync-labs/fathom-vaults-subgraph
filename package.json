@@ -23,8 +23,8 @@
     "prep:xinfin:xinfin": "yarn clean && yarn prep:addresses:xinfin:xinfin && mustache ./config/generatedAddresses.json subgraph.template.yaml > subgraph.yaml && graph codegen && graph build"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.20.0",
-    "@graphprotocol/graph-ts": "^0.20.0"
+    "@graphprotocol/graph-cli": "0.61.0",
+    "@graphprotocol/graph-ts": "0.31.0"
   },
   "devDependencies": {
      "mustache": "^4.2.0",

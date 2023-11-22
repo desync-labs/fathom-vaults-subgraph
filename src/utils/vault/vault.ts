@@ -9,7 +9,7 @@ import {
   VaultUpdate,
 } from '../../../generated/schema';
 import { FathomVault } from '../../../generated/FathomVault/FathomVault';
-import { FathomVault as VaultTemplate } from '../../../generated/templates';
+// import { FathomVault as VaultTemplate } from '../../../generated/templates';
 import {
   BIGINT_ZERO,
   DO_CREATE_VAULT_TEMPLATE,
@@ -91,7 +91,7 @@ export function getOrCreate(
     vault = createNewVaultFromAddress(vaultAddress, transaction);
 
     if (createTemplate) {
-      VaultTemplate.create(vaultAddress);
+      //VaultTemplate.create(vaultAddress);
     }
   }
 

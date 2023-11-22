@@ -74,7 +74,7 @@ function _getOrCreateTransaction(
     transaction.logIndex = logIndex;
     transaction.from = ethTransaction.from;
     transaction.gasPrice = ethTransaction.gasPrice;
-    transaction.gasUsed = ethTransaction.gasUsed;
+    // transaction.gasUsed = ethTransaction.gasUsed;
     transaction.hash = ethTransaction.hash;
     transaction.index = ethTransaction.index;
     transaction.to = toAddress;
