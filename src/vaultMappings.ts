@@ -1,51 +1,52 @@
 import { BigInt, log } from "@graphprotocol/graph-ts"
 import {
-  StrategyChanged,
-  StrategyReported,
-  DebtUpdated,
-  RoleSet,
-  RoleStatusChanged,
-  UpdateRoleManager,
-  UpdateAccountant,
-  UpdateDefaultQueue,
-  UpdateUseDefaultQueue,
-  UpdatedMaxDebtForStrategy,
-  UpdateDepositLimit,
-  UpdateMinimumTotalIdle,
-  UpdateProfitMaxUnlockTime,
-  DebtPurchased,
-  Shutdown,
-  UpdateDepositLimitModule,
-  UpdateWithdrawLimitModule,
-  Transfer,
-  Approval,
+  // StrategyChanged,
+  // StrategyReported,
+  // DebtUpdated,
+  // RoleSet,
+  // RoleStatusChanged,
+  // UpdateRoleManager,
+  // UpdateAccountant,
+  // UpdateDefaultQueue,
+  // UpdateUseDefaultQueue,
+  // UpdatedMaxDebtForStrategy,
+  // UpdateDepositLimit,
+  // UpdateMinimumTotalIdle,
+  // UpdateProfitMaxUnlockTime,
+  // DebtPurchased,
+  // Shutdown,
+  // UpdateDepositLimitModule,
+  // UpdateWithdrawLimitModule,
+  // Transfer,
+  // Approval,
   Deposit,
-  Withdraw,
-  FathomVault
-} from "../../generated/FathomVault/FathomVault"
-import { Transaction,
-  Token,
-  Vault,
-  VaultUpdate,
-  Account,
-  Deposit as DepositEntity,
-  Withdrawal,
-  Transfer as TransferEntity,
-  AccountVaultPosition,
-  AccountVaultPositionUpdate,
-  Strategy,
-  StrategyReport,
-  StrategyReportResult,
-  VaultDayData } from "../../generated/schema"
-  import {
-    getOrCreateTransactionFromCall,
-    getOrCreateTransactionFromEvent,
-  } from '../utils/transaction';
-  import { BIGINT_ZERO, BIGINT_MAX, ZERO_ADDRESS } from '../utils/constants';
-  import * as strategyLibrary from '../utils/strategy/strategy';
-  import * as vaultLibrary from '../utils/vault/vault';
-  import * as accountLibrary from '../utils/account/account';
-  import { fromSharesToAmount, printCallInfo } from '../utils/commons';
+  // Withdraw,
+  // FathomVault
+} from "../generated/FathomVault/FathomVault"
+ import { 
+  //Transaction,
+//   Token,
+//   Vault,
+//   VaultUpdate,
+//   Account,
+//   Deposit as DepositEntity,
+//   Withdrawal,
+//   Transfer as TransferEntity,
+//   AccountVaultPosition,
+//   AccountVaultPositionUpdate,
+//   Strategy,
+//   StrategyReport,
+//   StrategyReportResult,
+//   VaultDayData } from "../../generated/schema"
+//   import {
+//    getOrCreateTransactionFromCall,
+     getOrCreateTransactionFromEvent,
+  } from './utils/transaction';
+  // import { BIGINT_ZERO, BIGINT_MAX, ZERO_ADDRESS } from '../utils/constants';
+  // import * as strategyLibrary from '../utils/strategy/strategy';
+  import * as vaultLibrary from './utils/vault/vault';
+  // import * as accountLibrary from '../utils/account/account';
+  // import { fromSharesToAmount, printCallInfo } from '../utils/commons';
 
 // export function handleStrategyChanged(event: StrategyChanged): void {
 //   log.info('[Vault mappings] Handle strategy changed', []);
