@@ -7,7 +7,7 @@ export class Addresses {
   
   // AS compiler does not like const
   export let addresses: Addresses = {
-    FathomVault: '0xbe401B027d4D21716c6bd5Be351520E880D764dB',
-    blockNumber: '56840754',
+    FathomVault: '0x0174522d4150f868C6429cEF45c9246fABF5Dd5b',
+    blockNumber: '57208000',
     network: 'apothem'
   }
