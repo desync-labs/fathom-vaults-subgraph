@@ -717,19 +717,19 @@ export class FathomVault extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
-  DECIMALS(): BigInt {
-    let result = super.call("DECIMALS", "DECIMALS():(uint256)", []);
+  DECIMALS(): i32 {
+    let result = super.call("DECIMALS", "DECIMALS():(uint8)", []);
 
-    return result[0].toBigInt();
+    return result[0].toI32();
   }
 
-  try_DECIMALS(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("DECIMALS", "DECIMALS():(uint256)", []);
+  try_DECIMALS(): ethereum.CallResult<i32> {
+    let result = super.tryCall("DECIMALS", "DECIMALS():(uint8)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
+    return ethereum.CallResult.fromValue(value[0].toI32());
   }
 
   DEFAULT_ADMIN_ROLE(): Bytes {
@@ -2133,6 +2133,25 @@ export class FathomVault extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
+  sharesManager(): Address {
+    let result = super.call("sharesManager", "sharesManager():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_sharesManager(): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "sharesManager",
+      "sharesManager():(address)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   shutdown(): boolean {
     let result = super.call("shutdown", "shutdown():(bool)", []);
 
@@ -2183,6 +2202,29 @@ export class FathomVault extends ethereum.SmartContract {
         value[3].toBigInt()
       )
     );
+  }
+
+  strategyManager(): Address {
+    let result = super.call(
+      "strategyManager",
+      "strategyManager():(address)",
+      []
+    );
+
+    return result[0].toAddress();
+  }
+
+  try_strategyManager(): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "strategyManager",
+      "strategyManager():(address)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
   supportsInterface(interfaceId: Bytes): boolean {
@@ -2551,8 +2593,8 @@ export class ConstructorCall__Inputs {
     return this._call.inputValues[2].value.toString();
   }
 
-  get _roleManager(): Address {
-    return this._call.inputValues[3].value.toAddress();
+  get _decimals(): i32 {
+    return this._call.inputValues[3].value.toI32();
   }
 
   get _profitMaxUnlockTime(): BigInt {
@@ -2568,32 +2610,6 @@ export class ConstructorCall__Outputs {
   _call: ConstructorCall;
 
   constructor(call: ConstructorCall) {
-    this._call = call;
-  }
-}
-
-export class AcceptRoleManagerCall extends ethereum.Call {
-  get inputs(): AcceptRoleManagerCall__Inputs {
-    return new AcceptRoleManagerCall__Inputs(this);
-  }
-
-  get outputs(): AcceptRoleManagerCall__Outputs {
-    return new AcceptRoleManagerCall__Outputs(this);
-  }
-}
-
-export class AcceptRoleManagerCall__Inputs {
-  _call: AcceptRoleManagerCall;
-
-  constructor(call: AcceptRoleManagerCall) {
-    this._call = call;
-  }
-}
-
-export class AcceptRoleManagerCall__Outputs {
-  _call: AcceptRoleManagerCall;
-
-  constructor(call: AcceptRoleManagerCall) {
     this._call = call;
   }
 }
@@ -3715,36 +3731,6 @@ export class TransferFromCall__Outputs {
 
   get value0(): boolean {
     return this._call.outputValues[0].value.toBoolean();
-  }
-}
-
-export class TransferRoleManagerCall extends ethereum.Call {
-  get inputs(): TransferRoleManagerCall__Inputs {
-    return new TransferRoleManagerCall__Inputs(this);
-  }
-
-  get outputs(): TransferRoleManagerCall__Outputs {
-    return new TransferRoleManagerCall__Outputs(this);
-  }
-}
-
-export class TransferRoleManagerCall__Inputs {
-  _call: TransferRoleManagerCall;
-
-  constructor(call: TransferRoleManagerCall) {
-    this._call = call;
-  }
-
-  get newRoleManager(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class TransferRoleManagerCall__Outputs {
-  _call: TransferRoleManagerCall;
-
-  constructor(call: TransferRoleManagerCall) {
-    this._call = call;
   }
 }
 
