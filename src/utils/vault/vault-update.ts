@@ -57,7 +57,8 @@ function createVaultUpdate(
   minimumTotalIdle: BigInt,
   profitMaxUnlockTime: BigInt,
   totalDebtAmount: BigInt,
-  totalIdleAmount: BigInt
+  totalIdleAmount: BigInt,
+  shutdown: boolean
 ): VaultUpdate {
   log.debug('[VaultUpdate] Creating vault update with id {}', [id]);
 
@@ -90,6 +91,7 @@ function createVaultUpdate(
   vaultUpdate.profitMaxUnlockTime = profitMaxUnlockTime;
   vaultUpdate.totalDebtAmount = totalDebtAmount;
   vaultUpdate.totalIdleAmount = totalIdleAmount;
+  vaultUpdate.shutdown = shutdown;
   vaultUpdate.save();
 
   vault.latestUpdate = vaultUpdate.id;
@@ -194,8 +196,10 @@ export function firstDeposit(
       vault.profitMaxUnlockTime,
       vault.totalDebtAmount,
       vault.totalIdleAmount,
+      vault.shutdown
     );
   }
+
 
   return vaultUpdate as VaultUpdate;
 }
@@ -238,6 +242,7 @@ export function deposit(
       vault.profitMaxUnlockTime,
       vault.totalDebtAmount,
       vault.totalIdleAmount,
+      vault.shutdown
     );
   }
 
@@ -279,6 +284,7 @@ export function withdraw(
     vault.profitMaxUnlockTime,
     vault.totalDebtAmount,
     vault.totalIdleAmount,
+    vault.shutdown
   );
   return newVaultUpdate;
 }
@@ -326,6 +332,7 @@ export function strategyReported(
     vault.profitMaxUnlockTime,
     vault.totalDebtAmount,
     vault.totalIdleAmount,
+    vault.shutdown
   );
   return newVaultUpdate;
 }

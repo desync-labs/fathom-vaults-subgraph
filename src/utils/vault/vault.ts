@@ -48,6 +48,11 @@ const createNewVaultFromAddress = (
   vaultEntity.tags = [];
   vaultEntity.balanceTokens = BIGINT_ZERO;
   vaultEntity.balanceTokensIdle = BIGINT_ZERO;
+  vaultEntity.minimumTotalIdle = BIGINT_ZERO;
+  vaultEntity.profitMaxUnlockTime = BIGINT_ZERO;
+  vaultEntity.totalDebtAmount = BIGINT_ZERO;
+  vaultEntity.totalIdleAmount = BIGINT_ZERO;
+  vaultEntity.useDefaultQueue = true;
 
   vaultEntity.sharesSupply = BIGINT_ZERO;
 
@@ -65,10 +70,7 @@ const createNewVaultFromAddress = (
     ? BIGINT_ZERO
     : tryDepositLimit.value;
 
-  let tryEmergencyShutdown = vaultContract.try_shutdown();
-  vaultEntity.shutdown = tryEmergencyShutdown.reverted
-    ? false
-    : tryEmergencyShutdown.value;
+  vaultEntity.shutdown = false;
 
   //Empty at creation
   vaultEntity.defaultQueue = [];

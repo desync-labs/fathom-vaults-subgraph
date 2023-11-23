@@ -848,13 +848,21 @@ export class Account extends Entity {
     this.set("sharesSent", Value.fromStringArray(value));
   }
 
-  get role(): Bytes {
+  get role(): Bytes | null {
     let value = this.get("role");
-    return value.toBytes();
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
   }
 
-  set role(value: Bytes) {
-    this.set("role", Value.fromBytes(value));
+  set role(value: Bytes | null) {
+    if (value === null) {
+      this.unset("role");
+    } else {
+      this.set("role", Value.fromBytes(value as Bytes));
+    }
   }
 }
 
@@ -2008,15 +2016,6 @@ export class VaultDayData extends Entity {
 
   set dayReturnsGeneratedUSDC(value: BigInt) {
     this.set("dayReturnsGeneratedUSDC", Value.fromBigInt(value));
-  }
-
-  get tokenPriceUSDC(): BigInt {
-    let value = this.get("tokenPriceUSDC");
-    return value.toBigInt();
-  }
-
-  set tokenPriceUSDC(value: BigInt) {
-    this.set("tokenPriceUSDC", Value.fromBigInt(value));
   }
 
   get blockNumber(): BigInt {

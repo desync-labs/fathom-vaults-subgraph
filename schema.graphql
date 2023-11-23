@@ -188,7 +188,7 @@ type Account @entity {
   "Outgoing share transfers"
   sharesSent: [Transfer!]! @derivedFrom(field: "from")
   "Role"
-  role: Bytes!
+  role: Bytes
 }
 
 type Deposit @entity {
@@ -423,8 +423,8 @@ type VaultDayData @entity {
   dayReturnsGenerated: BigInt!
   "The earnings generated in USDC for this vault this day. These returns are priced using the token's USDC-denominated price at the time each harvest was performed."
   dayReturnsGeneratedUSDC: BigInt!
-  "The price of one of the vault's underlying token"
-  tokenPriceUSDC: BigInt!
+  # "The price of one of the vault's underlying token"
+  # tokenPriceUSDC: BigInt!
   "Block number the day data aggregation occured on"
   blockNumber: BigInt!
 }
