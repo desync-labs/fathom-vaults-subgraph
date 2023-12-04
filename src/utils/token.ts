@@ -1,6 +1,6 @@
 import { Address } from '@graphprotocol/graph-ts';
 import { Token } from '../../generated/schema';
-import { FathomVault } from '../../generated/FathomVault/FathomVault';
+import { SharesManager } from '../../generated/SharesManager/SharesManager';
 import { DEFAULT_DECIMALS } from '../utils/constants';
 
 export function getOrCreateToken(address: Address): Token {
@@ -8,7 +8,7 @@ export function getOrCreateToken(address: Address): Token {
   let token = Token.load(id);
   if (token == null) {
     token = new Token(id);
-    let erc20Contract = FathomVault.bind(address);
+    let erc20Contract = SharesManager.bind(address);
     let decimals = erc20Contract.try_decimals();
     // Using try_cause some values might be missing
     let name = erc20Contract.try_name();

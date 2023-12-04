@@ -1634,13 +1634,21 @@ export class Strategy extends Entity {
     }
   }
 
-  get delegatedAssets(): BigInt {
+  get delegatedAssets(): BigInt | null {
     let value = this.get("delegatedAssets");
-    return value.toBigInt();
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
   }
 
-  set delegatedAssets(value: BigInt) {
-    this.set("delegatedAssets", Value.fromBigInt(value));
+  set delegatedAssets(value: BigInt | null) {
+    if (value === null) {
+      this.unset("delegatedAssets");
+    } else {
+      this.set("delegatedAssets", Value.fromBigInt(value as BigInt));
+    }
   }
 
   get inQueue(): boolean {

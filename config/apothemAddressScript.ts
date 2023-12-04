@@ -11,6 +11,10 @@ renameAddresses['apothem'] = networkAddresses['51'][process.argv[2]]["addresses"
 
 export let addresses: Addresses = {
   FathomVault: '{{apothem.FathomVault}}',
+  StrategyManager: '{{apothem.StrategyManager}}',
+  SharesManager: '{{apothem.SharesManager}}',
+  Governance: '{{apothem.Governance}}',
+  Setters: '{{apothem.Setters}}',
   blockNumber: networkAddresses['51'][process.argv[2]]["blockNumber"],
   network:  networkAddresses['51']["network"],
 }

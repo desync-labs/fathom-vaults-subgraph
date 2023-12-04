@@ -348,7 +348,7 @@ type Strategy @entity {
   "Vaults that this strategy is active"
   activeOnVaults: [Vault!] @derivedFrom(field: "strategies")
   "The amount of assets this strategy manages that should not be included in Yearn's Total Value Locked (TVL) calculation across it's ecosystem."
-  delegatedAssets: BigInt!
+  delegatedAssets: BigInt
   "Defines whether this strategy is within the vault queue"
   inQueue: Boolean!
 }

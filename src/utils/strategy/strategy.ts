@@ -42,6 +42,7 @@ export function createAndGet(
     strategy.vault = vault.toHexString();
     strategy.currentDebt = currentDebt;
     strategy.maxDebt = maxDebt;
+    strategy.delegatedAssets = BigInt.fromI32(0);
     strategy.inQueue = true;
 
     strategy.save();

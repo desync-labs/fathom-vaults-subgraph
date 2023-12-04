@@ -2,7 +2,11 @@
   "50": {
       "xinfin":{
           "addresses": {
-            "Factory": "0x9fAb572F75008A42c6aF80b36Ab20C76a38ABc4B"
+            "Factory": "0x9fAb572F75008A42c6aF80b36Ab20C76a38ABc4B",
+            "StrategyManager": "0xED32F71Ae7427F1Bb6E53aC8F3e1CD4B8427167C",
+            "SharesManager": "0xF3a519f793E41FB9bd13c5CC664b42cFB0889ee6",
+            "Governance": "0xde5E6d96aB5d558b2976B945e4e858Ca29842554",
+            "Setters": "0xbb221Fe259EB05197dc303C63Cb46b6C99208b99"
           },
           "blockNumber":"59776353"    
       }
@@ -10,9 +14,13 @@
   "51": {
       "dev":{
           "addresses": {
-            "FathomVault": "0x0174522d4150f868C6429cEF45c9246fABF5Dd5b"
+            "FathomVault": "0xc06c2985607E12FAeD88733Af7891D3827E4E1b3",
+            "StrategyManager": "0xED32F71Ae7427F1Bb6E53aC8F3e1CD4B8427167C",
+            "SharesManager": "0xF3a519f793E41FB9bd13c5CC664b42cFB0889ee6",
+            "Governance": "0xde5E6d96aB5d558b2976B945e4e858Ca29842554",
+            "Setters": "0xbb221Fe259EB05197dc303C63Cb46b6C99208b99"
           },
-          "blockNumber":"57208000"
+          "blockNumber":"57400000"
       },
       "network":"apothem"
   }
