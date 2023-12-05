@@ -20,7 +20,7 @@ import { FathomVault } from "../../generated/FathomVault/FathomVault"
 const FATHOM_VAULT_ADDRESS = Address.fromString("0xc06c2985607E12FAeD88733Af7891D3827E4E1b3");
 
 export function handleDebtUpdated(event: DebtUpdated): void {
-  log.info('[Vault mappings] Handle debt updated', []);
+  log.info('[Shares Manager mappings] Handle debt updated', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'DebtUpdated'
@@ -48,7 +48,7 @@ export function handleUpdateDepositLimit(event: UpdateDepositLimit): void {
 }
 
 export function handleTransfer(event: Transfer): void {
-  log.info('[Vault mappings] Handle transfer: From: {} - To: {}. TX hash: {}', [
+  log.info('[Shares Manager mappings] Handle transfer: From: {} - To: {}. TX hash: {}', [
     event.params.from.toHexString(),
     event.params.to.toHexString(),
     event.transaction.hash.toHexString(),
@@ -66,7 +66,7 @@ export function handleTransfer(event: Transfer): void {
     }
 
     log.info(
-      '[Vault mappings] Processing transfer: Vault: {} From: {} - To: {}. TX hash: {}',
+      '[Shares Manager mappings] Processing transfer: Vault: {} From: {} - To: {}. TX hash: {}',
       [
         FATHOM_VAULT_ADDRESS.toHexString(),
         event.params.from.toHexString(),
@@ -79,6 +79,7 @@ export function handleTransfer(event: Transfer): void {
       'Transfer'
     );
     let vaultContract = FathomVault.bind(FATHOM_VAULT_ADDRESS);
+    let sharesManagerAddress = event.address;
     let totalAssets = vaultLibrary.getTotalAssets(FATHOM_VAULT_ADDRESS);
     let totalSupply = vaultContract.totalSupply();
     let sharesAmount = event.params.value;
@@ -87,6 +88,7 @@ export function handleTransfer(event: Transfer): void {
     // amount = (shares * totalAssets) / totalSupply
     vaultLibrary.transfer(
       vaultContract,
+      sharesManagerAddress,
       event.params.from,
       event.params.to,
       amount,
@@ -97,7 +99,7 @@ export function handleTransfer(event: Transfer): void {
     );
   } else {
     log.info(
-      '[Vault mappings] Not processing transfer: From: {} - To: {}. TX hash: {}',
+      '[Shares Manager mappings] Not processing transfer: From: {} - To: {}. TX hash: {}',
       [
         event.params.from.toHexString(),
         event.params.to.toHexString(),
@@ -108,23 +110,24 @@ export function handleTransfer(event: Transfer): void {
 }
 
 export function handleDeposit(event: Deposit): void {
-  log.debug('[Vault mappings] Handle deposit', []);
+  log.debug('[Shares Manager mappings] Handle deposit', []);
 
   let transaction = getOrCreateTransactionFromEvent(event, 'Deposit');
 
   let amount = event.params.assets;
   let sharesMinted = event.params.shares;
   let recipient = event.params.owner;
-
+  let sharesManagerAddress = event.address;
   let vaultAddress = FATHOM_VAULT_ADDRESS;
 
-  log.info('[Vault mappings] Handle deposit shares {} - amount {}', [
+  log.info('[Shares Manager mappings] Handle deposit shares {} - amount {}', [
     sharesMinted.toString(),
     amount.toString(),
   ]);
 
   vaultLibrary.deposit(
     vaultAddress,
+    sharesManagerAddress,
     transaction,
     recipient,
     amount,
@@ -135,22 +138,24 @@ export function handleDeposit(event: Deposit): void {
 }
 
 export function handleWithdraw(event: Withdraw): void {
-  log.debug('[Vault mappings] Handle withdraw', []);
+  log.debug('[Shares Manager mappings] Handle withdraw', []);
 
   let transaction = getOrCreateTransactionFromEvent(event, 'Withdraw');
 
   let amount = event.params.assets;
   let sharesBurnt = event.params.shares;
   let recipient = event.params.receiver;
+  let sharesManagerAddress = event.address;
   let vaultAddress = FATHOM_VAULT_ADDRESS;
 
-  log.info('[Vault mappings] Handle withdraw shares {} - amount {}', [
+  log.info('[Shares Manager mappings] Handle withdraw shares {} - amount {}', [
     sharesBurnt.toString(),
     amount.toString(),
   ]);
 
   vaultLibrary.withdraw(
     vaultAddress,
+    sharesManagerAddress,
     recipient,
     amount,
     sharesBurnt,

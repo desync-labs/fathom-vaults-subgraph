@@ -112,12 +112,12 @@ export function createReport(
           latestReport
         );
       }
-    } else {
-      log.info(
-        '[Strategy] Report result NOT created. Only one report created {} for strategy {}. TxHash: {}',
-        [latestReport.id, strategyId, txHash]
-      );
-    }
+      } else {
+        log.info(
+          '[Strategy] Report result NOT created. Only one report created {} for strategy {}. TxHash: {}',
+          [latestReport.id, strategyId, txHash]
+        );
+      }
     return latestReport;
   } else {
     log.warning(

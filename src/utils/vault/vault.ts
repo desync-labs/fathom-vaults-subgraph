@@ -33,13 +33,14 @@ const buildId = (vaultAddress: Address): string => {
 
 const createNewVaultFromAddress = (
   vaultAddress: Address,
+  sharesManagerAddress: Address,
   transaction: Transaction
 ): Vault => {
   let id = vaultAddress.toHexString();
   let vaultEntity = new Vault(id);
   let vaultContract = FathomVault.bind(vaultAddress);
   let token = getOrCreateToken(vaultContract.asset());
-  let shareToken = getOrCreateToken(vaultAddress);
+  let shareToken = getOrCreateToken(sharesManagerAddress);
   vaultEntity.transaction = transaction.id;
   vaultEntity.token = token.id;
   vaultEntity.shareToken = shareToken.id;
@@ -81,6 +82,7 @@ const createNewVaultFromAddress = (
 
 export function getOrCreate(
   vaultAddress: Address,
+  sharesManagerAddress: Address,
   transaction: Transaction,
   createTemplate: boolean
 ): Vault {
@@ -90,7 +92,7 @@ export function getOrCreate(
 
   if (vault == null) {
     log.info('CREATING NEW VAULT!!!!!!!!!!!!!!!!!!!!!1', []);
-    vault = createNewVaultFromAddress(vaultAddress, transaction);
+    vault = createNewVaultFromAddress(vaultAddress, sharesManagerAddress, transaction);
 
     if (createTemplate) {
       VaultTemplate.create(vaultAddress);
@@ -116,6 +118,7 @@ export function tag(vault: Address, tag: string): Vault | null {
 
 export function deposit(
   vaultAddress: Address,
+  sharesManagerAddress: Address,
   transaction: Transaction,
   receiver: Address,
   depositedAmount: BigInt,
@@ -134,7 +137,7 @@ export function deposit(
   );
   let vaultContract = FathomVault.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(receiver);
-  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
+  let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
 
   accountVaultPositionLibrary.deposit(
     vaultContract,
@@ -212,6 +215,7 @@ export function isVault(vaultAddress: Address): boolean {
 
 export function withdraw(
   vaultAddress: Address,
+  sharesManagerAddress: Address,
   from: Address,
   withdrawnAmount: BigInt,
   sharesBurnt: BigInt,
@@ -222,7 +226,7 @@ export function withdraw(
   let vaultContract = FathomVault.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(from);
   let balancePosition = getBalancePosition(vaultContract);
-  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
+  let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
   withdrawalLibrary.getOrCreate(
     account,
     vault,
@@ -334,6 +338,7 @@ export function withdraw(
 
 export function transfer(
   vaultContract: FathomVault,
+  sharesManagerAddress: Address,
   from: Address,
   to: Address,
   amount: BigInt,
@@ -346,7 +351,7 @@ export function transfer(
   let shareToken = tokenLibrary.getOrCreateToken(vaultAddress);
   let fromAccount = accountLibrary.getOrCreate(from);
   let toAccount = accountLibrary.getOrCreate(to);
-  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
+  let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
   transferLibrary.getOrCreate(
     fromAccount,
     toAccount,
@@ -374,6 +379,7 @@ export function strategyReported(
   strategyReport: StrategyReport,
   vaultContract: FathomVault,
   vaultAddress: Address,
+  SHARES_MANAGER_ADDRESS: Address,
   timestamp: BigInt,
   blockNumber: BigInt,
 ): void {
@@ -381,7 +387,7 @@ export function strategyReported(
     vaultAddress.toHexString(),
     transaction.hash.toHexString(),
   ]);
-  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
+  let vault = getOrCreate(vaultAddress, SHARES_MANAGER_ADDRESS, transaction, DO_CREATE_VAULT_TEMPLATE);
 
   if (!vault.latestUpdate) {
     log.warning(

@@ -17,9 +17,10 @@ import {
 
 // Constant for the FathomVault contract address
 const FATHOM_VAULT_ADDRESS = Address.fromString("0xc06c2985607E12FAeD88733Af7891D3827E4E1b3");
+const SHARES_MANAGER_ADDRESS = Address.fromString("0xF3a519f793E41FB9bd13c5CC664b42cFB0889ee6");
 
 export function handleStrategyChanged(event: StrategyChanged): void {
-  log.info('[Vault mappings] Handle strategy changed', []);
+  log.info('[Strategy Manager mappings] Handle strategy changed', []);
   let transaction = getOrCreateTransactionFromEvent(
     event,
     'StrategyChanged'
@@ -35,7 +36,7 @@ export function handleStrategyChanged(event: StrategyChanged): void {
 }
 
 export function handleStrategyReported(event: StrategyReported): void {
-  log.info('[Vault mappings] Handle strategy reported', []);
+  log.info('[Strategy Manager mappings] Handle strategy reported', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'StrategyReported'
@@ -55,7 +56,7 @@ export function handleStrategyReported(event: StrategyReported): void {
   let vaultContractAddress = FATHOM_VAULT_ADDRESS;
   if (!strategyReport) {
     log.warning(
-      '[Vault mappings] Strategy report NOT created. Handler is finishing. TxHash: {} - Strategy: {} - Vault: {}',
+      '[Strategy Manager mappings] Strategy report NOT created. Handler is finishing. TxHash: {} - Strategy: {} - Vault: {}',
       [
         event.transaction.hash.toHexString(),
         event.params.strategy.toHexString(),
@@ -66,7 +67,7 @@ export function handleStrategyReported(event: StrategyReported): void {
   }
 
   log.info(
-    '[Vault mappings] Updating price per share (strategy reported): {}',
+    '[Strategy Manager mappings] Updating price per share (strategy reported): {}',
     [event.transaction.hash.toHexString()]
   );
   let vaultContract = FathomVault.bind(vaultContractAddress);
@@ -75,13 +76,14 @@ export function handleStrategyReported(event: StrategyReported): void {
     strategyReport as StrategyReport,
     vaultContract,
     vaultContractAddress,
+    SHARES_MANAGER_ADDRESS,
     event.block.timestamp,
     event.block.number
   );
 }
 
 export function handleDebtUpdated(event: DebtUpdated): void {
-  log.info('[Vault mappings] Handle debt updated', []);
+  log.info('[Strategy Manager mappings] Handle debt updated', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'DebtUpdated'
@@ -96,7 +98,7 @@ export function handleDebtUpdated(event: DebtUpdated): void {
 }
 
 export function handleUpdatedMaxDebtForStrategy(event: UpdatedMaxDebtForStrategy): void {
-  log.info('[Vault mappings] Handle max debt updated', []);
+  log.info('[Strategy Manager mappings] Handle max debt updated', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'UpdatedMaxDebtForStrategy'

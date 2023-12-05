@@ -18,7 +18,7 @@ import {
 const FATHOM_VAULT_ADDRESS = Address.fromString("0xc06c2985607E12FAeD88733Af7891D3827E4E1b3");
 
 export function handleDebtUpdated(event: DebtUpdated): void {
-  log.info('[Vault mappings] Handle debt updated', []);
+  log.info('[Governance mappings] Handle debt updated', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'DebtUpdated'
@@ -47,7 +47,7 @@ export function handleUpdateDepositLimit(event: UpdateDepositLimit): void {
 }
 
 export function handleDebtPurchased(event: DebtPurchased): void {
-  log.info('[Vault mappings] Handle debt purchased', []);
+  log.info('[Governance mappings] Handle debt purchased', []);
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'DebtPurchased'
