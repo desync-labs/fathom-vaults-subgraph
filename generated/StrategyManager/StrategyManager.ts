@@ -1426,11 +1426,12 @@ export class StrategyManager extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  updateDebt(strategy: Address, targetDebt: BigInt): BigInt {
+  updateDebt(sender: Address, strategy: Address, targetDebt: BigInt): BigInt {
     let result = super.call(
       "updateDebt",
-      "updateDebt(address,uint256):(uint256)",
+      "updateDebt(address,address,uint256):(uint256)",
       [
+        ethereum.Value.fromAddress(sender),
         ethereum.Value.fromAddress(strategy),
         ethereum.Value.fromUnsignedBigInt(targetDebt)
       ]
@@ -1440,13 +1441,15 @@ export class StrategyManager extends ethereum.SmartContract {
   }
 
   try_updateDebt(
+    sender: Address,
     strategy: Address,
     targetDebt: BigInt
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "updateDebt",
-      "updateDebt(address,uint256):(uint256)",
+      "updateDebt(address,address,uint256):(uint256)",
       [
+        ethereum.Value.fromAddress(sender),
         ethereum.Value.fromAddress(strategy),
         ethereum.Value.fromUnsignedBigInt(targetDebt)
       ]
@@ -1654,12 +1657,16 @@ export class UpdateDebtCall__Inputs {
     this._call = call;
   }
 
-  get strategy(): Address {
+  get sender(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 
+  get strategy(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
   get targetDebt(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
+    return this._call.inputValues[2].value.toBigInt();
   }
 }
 

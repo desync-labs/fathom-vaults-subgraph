@@ -26,6 +26,7 @@ import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
 import { updateVaultDayData } from './vault-day-data';
 import { booleanToString, removeElementFromArray } from '../commons';
+import { SharesManager } from '../../../generated/SharesManager/SharesManager';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -39,7 +40,7 @@ const createNewVaultFromAddress = (
   let id = vaultAddress.toHexString();
   let vaultEntity = new Vault(id);
   let vaultContract = FathomVault.bind(vaultAddress);
-  let token = getOrCreateToken(vaultContract.asset());
+  let token = getOrCreateToken(sharesManagerAddress);
   let shareToken = getOrCreateToken(sharesManagerAddress);
   vaultEntity.transaction = transaction.id;
   vaultEntity.token = token.id;
@@ -141,6 +142,7 @@ export function deposit(
 
   accountVaultPositionLibrary.deposit(
     vaultContract,
+    sharesManagerAddress,
     account,
     vault,
     transaction,
@@ -157,8 +159,8 @@ export function deposit(
   );
 
   let vaultUpdate: VaultUpdate;
-  let balancePosition = getBalancePosition(vaultContract);
-  let totalAssets = getTotalAssets(vaultAddress);
+  let balancePosition = getBalancePosition(vaultContract, sharesManagerAddress);
+  let totalAssets = getTotalAssets(sharesManagerAddress);
   if (vault.latestUpdate == null) {
     vaultUpdate = vaultUpdateLibrary.firstDeposit(
       vault,
@@ -187,10 +189,11 @@ export function deposit(
 /* Calculates the amount of tokens deposited via totalAssets/totalSupply arithmetic. */
 export function calculateAmountDeposited(
   vaultAddress: Address,
+  sharesManagerAddress: Address,
   sharesMinted: BigInt
 ): BigInt {
   let vaultContract = FathomVault.bind(vaultAddress);
-  let totalAssets = getTotalAssets(vaultAddress);
+  let totalAssets = getTotalAssets(sharesManagerAddress);
   let totalSupply = vaultContract.totalSupply();
   let amount = totalSupply.isZero()
     ? BIGINT_ZERO
@@ -225,7 +228,7 @@ export function withdraw(
 ): void {
   let vaultContract = FathomVault.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(from);
-  let balancePosition = getBalancePosition(vaultContract);
+  let balancePosition = getBalancePosition(vaultContract, sharesManagerAddress);
   let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
   withdrawalLibrary.getOrCreate(
     account,
@@ -250,6 +253,7 @@ export function withdraw(
     if (latestAccountVaultPositionUpdate !== null) {
       accountVaultPositionLibrary.withdraw(
         vaultContract,
+        sharesManagerAddress,
         accountVaultPosition as AccountVaultPosition,
         withdrawnAmount,
         sharesBurnt,
@@ -322,7 +326,7 @@ export function withdraw(
         sharesBurnt,
         transaction,
         balancePosition,
-        getTotalAssets(vaultAddress),
+        getTotalAssets(sharesManagerAddress),
         timestamp,
         blockNumber
       );
@@ -365,6 +369,7 @@ export function transfer(
 
   accountVaultPositionLibrary.transfer(
     vaultContract,
+    sharesManagerAddress,
     fromAccount,
     toAccount,
     vault,
@@ -396,7 +401,7 @@ export function strategyReported(
     );
   }
 
-  let balancePosition = getBalancePosition(vaultContract);
+  let balancePosition = getBalancePosition(vaultContract, SHARES_MANAGER_ADDRESS);
   let grossReturnsGenerated = strategyReport.gain.minus(strategyReport.loss);
   let currentTotalFees = strategyReport.totalFees;
 
@@ -468,9 +473,9 @@ export function UpdateUseDefaultQueue(
       }
   }
 
-export function getTotalAssets(vaultAddress: Address): BigInt {
-  let vaultContract = FathomVault.bind(vaultAddress);
-  let tryTotalAssets = vaultContract.try_totalAssets();
+export function getTotalAssets(sharesManager: Address): BigInt {
+  let sharesManagerContract = SharesManager.bind(sharesManager);
+  let tryTotalAssets = sharesManagerContract.try_totalAssets();
   // TODO Debugging Use totalAssets directly
   let totalAssets = tryTotalAssets.reverted
     ? BigInt.fromI32(0)
@@ -478,8 +483,9 @@ export function getTotalAssets(vaultAddress: Address): BigInt {
   return totalAssets;
 }
 
-function getBalancePosition(vaultContract: FathomVault): BigInt {
-  let tryTotalAssets = vaultContract.try_totalAssets();
+function getBalancePosition(vaultContract: FathomVault, sharesManager: Address): BigInt {
+  let sharesManagerContract = SharesManager.bind(sharesManager);
+  let tryTotalAssets = sharesManagerContract.try_totalAssets();
   // TODO Debugging Use totalAssets directly
   let totalAssets = tryTotalAssets.reverted
     ? BigInt.fromI32(0)
@@ -488,7 +494,7 @@ function getBalancePosition(vaultContract: FathomVault): BigInt {
   if (tryTotalAssets.reverted) {
     log.warning(
       'try_totalAssets (getBalancePosition) FAILED Vault {} - TotalAssets',
-      [vaultContract._address.toHexString(), totalAssets.toString()]
+      [sharesManagerContract._address.toHexString(), totalAssets.toString()]
     );
   }
   let tryPricePerShare = vaultContract.try_pricePerShare();

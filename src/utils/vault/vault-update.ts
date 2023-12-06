@@ -145,7 +145,7 @@ function constructVaultUpdateEntity(
 
   // Populate the following parameters based on the vault's current state.
   let pricePerShare: BigInt = vaultContract.pricePerShare();
-  let balanceTokens: BigInt = getTotalAssets(vaultAddress);
+  let balanceTokens: BigInt = getTotalAssets(Address.fromString(vault.shareToken));
 
   let vaultUpdate = new VaultUpdate(id);
   vaultUpdate.totalFees = totalFees;

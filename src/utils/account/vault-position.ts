@@ -10,6 +10,7 @@ import {
 import { FathomVault } from '../../../generated/FathomVault/FathomVault';
 import * as vaultPositionUpdateLibrary from './vault-position-update';
 import { BIGINT_ZERO, ZERO_ADDRESS } from '../constants';
+import { SharesManager } from '../../../generated/SharesManager/SharesManager';
 
 export function buildId(account: Account, vault: Vault): string {
   return account.id.concat('-').concat(vault.id);
@@ -60,11 +61,13 @@ export function getOrCreate(
 
 export function getBalancePosition(
   account: Account,
-  vaultContract: FathomVault
+  vaultContract: FathomVault,
+  sharesManager: Address
 ): BigInt {
   log.info('[VaultPosition] GetBalancePosition account  {} ', [account.id]);
   let pricePerShare = vaultContract.pricePerShare();
-  let decimals = vaultContract.decimals();
+  let sharesManagerContract = SharesManager.bind(sharesManager);
+  let decimals = sharesManagerContract.decimals();
   // (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -121,6 +124,7 @@ function getBalanceProfit(
 
 export function deposit(
   vaultContract: FathomVault,
+  sharesManager: Address,
   account: Account,
   vault: Vault,
   transaction: Transaction,
@@ -136,7 +140,7 @@ export function deposit(
   // TODO Use tokenLibrary.getOrCreate
   let token = Token.load(vault.token) as Token;
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(account, vaultContract);
+  let balancePosition = getBalancePosition(account, vaultContract, sharesManager);
   if (accountVaultPosition == null) {
     log.info('Tx: {} Account vault position {} not found. Creating it.', [
       txHash,
@@ -195,6 +199,7 @@ export function deposit(
 
 export function withdraw(
   vaultContract: FathomVault,
+  sharesManager: Address,
   accountVaultPosition: AccountVaultPosition,
   withdrawnAmount: BigInt,
   sharesBurnt: BigInt,
@@ -204,7 +209,7 @@ export function withdraw(
   let vault = Vault.load(accountVaultPosition.vault) as Vault;
   let token = Token.load(vault.token) as Token;
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(account, vaultContract);
+  let balancePosition = getBalancePosition(account, vaultContract, sharesManager);
   let newAccountVaultPositionOrder = vaultPositionUpdateLibrary.getNewOrder(
     accountVaultPosition.latestUpdate,
     transaction.hash.toHexString()
@@ -295,6 +300,7 @@ export function withdrawZero(
 
 export function transferForAccount(
   vaultContract: FathomVault,
+  sharesManager: Address,
   account: Account,
   vault: Vault,
   receivingTransfer: boolean,
@@ -305,7 +311,7 @@ export function transferForAccount(
   let accountVaultPositionId = buildId(account, vault);
   let accountVaultPosition = AccountVaultPosition.load(accountVaultPositionId);
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(account, vaultContract);
+  let balancePosition = getBalancePosition(account, vaultContract, sharesManager);
   let latestUpdateId: string;
   let newAccountVaultPositionOrder: BigInt;
   if (accountVaultPosition == null) {
@@ -398,6 +404,7 @@ export function transferForAccount(
 
 export function transfer(
   vaultContract: FathomVault,
+  sharesManager: Address,
   fromAccount: Account,
   toAccount: Account,
   vault: Vault,
@@ -414,6 +421,7 @@ export function transfer(
 
   transferForAccount(
     vaultContract,
+    sharesManager,
     fromAccount,
     vault,
     false,
@@ -424,6 +432,7 @@ export function transfer(
 
   transferForAccount(
     vaultContract,
+    sharesManager,
     toAccount,
     vault,
     true,

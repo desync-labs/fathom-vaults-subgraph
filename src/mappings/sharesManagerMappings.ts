@@ -17,7 +17,7 @@ import { FathomVault } from "../../generated/FathomVault/FathomVault"
   import { fromSharesToAmount } from '../utils/commons';
 
 // Constant for the FathomVault contract address
-const FATHOM_VAULT_ADDRESS = Address.fromString("0xc06c2985607E12FAeD88733Af7891D3827E4E1b3");
+const FATHOM_VAULT_ADDRESS = Address.fromString("0x223d5ea594971195b7ef8F0593500d2f59E4B7d3");
 
 export function handleDebtUpdated(event: DebtUpdated): void {
   log.info('[Shares Manager mappings] Handle debt updated', []);

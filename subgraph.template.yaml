@@ -63,6 +63,8 @@ dataSources:
           file: ./abis/StrategyManager.json
         - name: FathomVault
           file: ./abis/FathomVault.json
+        - name: SharesManager
+          file: ./abis/SharesManager.json
       eventHandlers:
         - event: StrategyChanged(indexed address,uint8)
           handler: handleStrategyChanged
