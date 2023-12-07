@@ -16,8 +16,8 @@ import {
   import * as vaultLibrary from '../utils/vault/vault';
 
 // Constant for the FathomVault contract address
-const FATHOM_VAULT_ADDRESS = Address.fromString("0x223d5ea594971195b7ef8F0593500d2f59E4B7d3");
-const SHARES_MANAGER_ADDRESS = Address.fromString("0x3C1FDB4342C0443aa9D8A3803c3981F149b9BDDc");
+const FATHOM_VAULT_ADDRESS = Address.fromString("0x64a472B648C67ED33913f166FdDCC63130c5032d");
+const SHARES_MANAGER_ADDRESS = Address.fromString("0x6303479B3cf428ba793133f8cdE84AC527897e46");
 
 export function handleStrategyChanged(event: StrategyChanged): void {
   log.info('[Strategy Manager mappings] Handle strategy changed', []);
