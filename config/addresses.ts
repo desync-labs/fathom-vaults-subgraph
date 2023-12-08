@@ -16,6 +16,6 @@ export class Addresses {
     SharesManager: '0x6303479B3cf428ba793133f8cdE84AC527897e46',
     Governance: '0x4dc7677F025a8901b48e430570780E851a039a64',
     Setters: '0xe5Dd91FC9f7c9531A508705a4478BC9caca4F9cB',
-    blockNumber: '57580000',
+    blockNumber: '57600000',
     network: 'apothem'
   }

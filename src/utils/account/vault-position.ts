@@ -239,13 +239,13 @@ export function withdraw(
     balancePosition
   );
   accountVaultPosition.balanceShares = balanceShares;
-  accountVaultPosition.balanceTokens = getBalanceTokens(
-    accountVaultPosition.balanceTokens,
-    withdrawnAmount
-  );
   accountVaultPosition.balanceProfit = getBalanceProfit(
     accountVaultPosition.balanceShares,
     accountVaultPosition.balanceProfit,
+    accountVaultPosition.balanceTokens,
+    withdrawnAmount
+  );
+  accountVaultPosition.balanceTokens = getBalanceTokens(
     accountVaultPosition.balanceTokens,
     withdrawnAmount
   );
