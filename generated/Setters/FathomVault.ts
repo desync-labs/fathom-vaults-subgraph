@@ -1318,6 +1318,25 @@ export class FathomVault extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  getDebt(strategy: Address): BigInt {
+    let result = super.call("getDebt", "getDebt(address):(uint256)", [
+      ethereum.Value.fromAddress(strategy)
+    ]);
+
+    return result[0].toBigInt();
+  }
+
+  try_getDebt(strategy: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("getDebt", "getDebt(address):(uint256)", [
+      ethereum.Value.fromAddress(strategy)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   getRoleAdmin(role: Bytes): Bytes {
     let result = super.call("getRoleAdmin", "getRoleAdmin(bytes32):(bytes32)", [
       ethereum.Value.fromFixedBytes(role)
