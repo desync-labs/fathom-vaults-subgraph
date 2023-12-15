@@ -15,7 +15,7 @@ import {
   import * as vaultLibrary from '../utils/vault/vault';
 
 // Constant for the FathomVault contract address
-const FATHOM_VAULT_ADDRESS = Address.fromString("0x7514Fb61df8a782db0647160c3FE7b14Cd995Efc");
+const FATHOM_VAULT_ADDRESS = Address.fromString("0x15e40f8b24E46032149cd6dc75ebe8766C7F6182");
 
 export function handleUpdateAccountant(event: UpdateAccountant): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
