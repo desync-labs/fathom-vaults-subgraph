@@ -15,7 +15,7 @@ import {
   import * as vaultLibrary from '../utils/vault/vault';
 
 // Constant for the FathomVault contract address
-const FATHOM_VAULT_ADDRESS = Address.fromString("0x15e40f8b24E46032149cd6dc75ebe8766C7F6182");
+const FATHOM_VAULT_ADDRESS = Address.fromString("0xEd4e0f720E5C7b409492DE967d2da0e9dd24b8C9");
 
 export function handleDebtUpdated(event: DebtUpdated): void {
   log.info('[Governance mappings] Handle debt updated', []);

@@ -446,6 +446,29 @@ export class UpdatedMaxDebtForStrategy__Params {
   }
 }
 
+export class Setters__feesResult {
+  value0: BigInt;
+  value1: BigInt;
+  value2: BigInt;
+  value3: Address;
+
+  constructor(value0: BigInt, value1: BigInt, value2: BigInt, value3: Address) {
+    this.value0 = value0;
+    this.value1 = value1;
+    this.value2 = value2;
+    this.value3 = value3;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
+    map.set("value3", ethereum.Value.fromAddress(this.value3));
+    return map;
+  }
+}
+
 export class Setters__strategiesResult {
   value0: BigInt;
   value1: BigInt;
@@ -1042,6 +1065,41 @@ export class Setters extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  fees(): Setters__feesResult {
+    let result = super.call(
+      "fees",
+      "fees():(uint256,uint256,uint256,address)",
+      []
+    );
+
+    return new Setters__feesResult(
+      result[0].toBigInt(),
+      result[1].toBigInt(),
+      result[2].toBigInt(),
+      result[3].toAddress()
+    );
+  }
+
+  try_fees(): ethereum.CallResult<Setters__feesResult> {
+    let result = super.tryCall(
+      "fees",
+      "fees():(uint256,uint256,uint256,address)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new Setters__feesResult(
+        value[0].toBigInt(),
+        value[1].toBigInt(),
+        value[2].toBigInt(),
+        value[3].toAddress()
+      )
+    );
   }
 
   fullProfitUnlockDate(): BigInt {

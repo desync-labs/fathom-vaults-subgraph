@@ -576,6 +576,29 @@ export class SharesManager__calculateShareManagementResultValue0Struct extends e
   }
 }
 
+export class SharesManager__feesResult {
+  value0: BigInt;
+  value1: BigInt;
+  value2: BigInt;
+  value3: Address;
+
+  constructor(value0: BigInt, value1: BigInt, value2: BigInt, value3: Address) {
+    this.value0 = value0;
+    this.value1 = value1;
+    this.value2 = value2;
+    this.value3 = value3;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
+    map.set("value3", ethereum.Value.fromAddress(this.value3));
+    return map;
+  }
+}
+
 export class SharesManager__handleShareBurnsAndIssuesResult {
   value0: BigInt;
   value1: BigInt;
@@ -607,7 +630,7 @@ export class SharesManager__handleShareBurnsAndIssuesInputSharesStruct extends e
   }
 }
 
-export class SharesManager__handleShareBurnsAndIssuesInputFeesStruct extends ethereum.Tuple {
+export class SharesManager__handleShareBurnsAndIssuesInput_feesStruct extends ethereum.Tuple {
   get totalFees(): BigInt {
     return this[0].toBigInt();
   }
@@ -1343,17 +1366,21 @@ export class SharesManager extends ethereum.SmartContract {
   }
 
   calculateShareManagement(
+    gain: BigInt,
     loss: BigInt,
     totalFees: BigInt,
-    protocolFees: BigInt
+    protocolFees: BigInt,
+    strategy: Address
   ): SharesManager__calculateShareManagementResultValue0Struct {
     let result = super.call(
       "calculateShareManagement",
-      "calculateShareManagement(uint256,uint256,uint256):((uint256,uint256,uint256))",
+      "calculateShareManagement(uint256,uint256,uint256,uint256,address):((uint256,uint256,uint256))",
       [
+        ethereum.Value.fromUnsignedBigInt(gain),
         ethereum.Value.fromUnsignedBigInt(loss),
         ethereum.Value.fromUnsignedBigInt(totalFees),
-        ethereum.Value.fromUnsignedBigInt(protocolFees)
+        ethereum.Value.fromUnsignedBigInt(protocolFees),
+        ethereum.Value.fromAddress(strategy)
       ]
     );
 
@@ -1361,19 +1388,23 @@ export class SharesManager extends ethereum.SmartContract {
   }
 
   try_calculateShareManagement(
+    gain: BigInt,
     loss: BigInt,
     totalFees: BigInt,
-    protocolFees: BigInt
+    protocolFees: BigInt,
+    strategy: Address
   ): ethereum.CallResult<
     SharesManager__calculateShareManagementResultValue0Struct
   > {
     let result = super.tryCall(
       "calculateShareManagement",
-      "calculateShareManagement(uint256,uint256,uint256):((uint256,uint256,uint256))",
+      "calculateShareManagement(uint256,uint256,uint256,uint256,address):((uint256,uint256,uint256))",
       [
+        ethereum.Value.fromUnsignedBigInt(gain),
         ethereum.Value.fromUnsignedBigInt(loss),
         ethereum.Value.fromUnsignedBigInt(totalFees),
-        ethereum.Value.fromUnsignedBigInt(protocolFees)
+        ethereum.Value.fromUnsignedBigInt(protocolFees),
+        ethereum.Value.fromAddress(strategy)
       ]
     );
     if (result.reverted) {
@@ -1664,6 +1695,41 @@ export class SharesManager extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  fees(): SharesManager__feesResult {
+    let result = super.call(
+      "fees",
+      "fees():(uint256,uint256,uint256,address)",
+      []
+    );
+
+    return new SharesManager__feesResult(
+      result[0].toBigInt(),
+      result[1].toBigInt(),
+      result[2].toBigInt(),
+      result[3].toAddress()
+    );
+  }
+
+  try_fees(): ethereum.CallResult<SharesManager__feesResult> {
+    let result = super.tryCall(
+      "fees",
+      "fees():(uint256,uint256,uint256,address)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new SharesManager__feesResult(
+        value[0].toBigInt(),
+        value[1].toBigInt(),
+        value[2].toBigInt(),
+        value[3].toAddress()
+      )
+    );
+  }
+
   fullProfitUnlockDate(): BigInt {
     let result = super.call(
       "fullProfitUnlockDate",
@@ -1794,7 +1860,7 @@ export class SharesManager extends ethereum.SmartContract {
 
   handleShareBurnsAndIssues(
     shares: SharesManager__handleShareBurnsAndIssuesInputSharesStruct,
-    fees: SharesManager__handleShareBurnsAndIssuesInputFeesStruct,
+    _fees: SharesManager__handleShareBurnsAndIssuesInput_feesStruct,
     gain: BigInt,
     loss: BigInt,
     strategy: Address
@@ -1804,7 +1870,7 @@ export class SharesManager extends ethereum.SmartContract {
       "handleShareBurnsAndIssues((uint256,uint256,uint256),(uint256,uint256,uint256,address),uint256,uint256,address):(uint256,uint256)",
       [
         ethereum.Value.fromTuple(shares),
-        ethereum.Value.fromTuple(fees),
+        ethereum.Value.fromTuple(_fees),
         ethereum.Value.fromUnsignedBigInt(gain),
         ethereum.Value.fromUnsignedBigInt(loss),
         ethereum.Value.fromAddress(strategy)
@@ -1819,7 +1885,7 @@ export class SharesManager extends ethereum.SmartContract {
 
   try_handleShareBurnsAndIssues(
     shares: SharesManager__handleShareBurnsAndIssuesInputSharesStruct,
-    fees: SharesManager__handleShareBurnsAndIssuesInputFeesStruct,
+    _fees: SharesManager__handleShareBurnsAndIssuesInput_feesStruct,
     gain: BigInt,
     loss: BigInt,
     strategy: Address
@@ -1829,7 +1895,7 @@ export class SharesManager extends ethereum.SmartContract {
       "handleShareBurnsAndIssues((uint256,uint256,uint256),(uint256,uint256,uint256,address),uint256,uint256,address):(uint256,uint256)",
       [
         ethereum.Value.fromTuple(shares),
-        ethereum.Value.fromTuple(fees),
+        ethereum.Value.fromTuple(_fees),
         ethereum.Value.fromUnsignedBigInt(gain),
         ethereum.Value.fromUnsignedBigInt(loss),
         ethereum.Value.fromAddress(strategy)
@@ -3070,6 +3136,70 @@ export class BurnUnlockedSharesCall__Outputs {
   }
 }
 
+export class CalculateShareManagementCall extends ethereum.Call {
+  get inputs(): CalculateShareManagementCall__Inputs {
+    return new CalculateShareManagementCall__Inputs(this);
+  }
+
+  get outputs(): CalculateShareManagementCall__Outputs {
+    return new CalculateShareManagementCall__Outputs(this);
+  }
+}
+
+export class CalculateShareManagementCall__Inputs {
+  _call: CalculateShareManagementCall;
+
+  constructor(call: CalculateShareManagementCall) {
+    this._call = call;
+  }
+
+  get gain(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get loss(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get totalFees(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+
+  get protocolFees(): BigInt {
+    return this._call.inputValues[3].value.toBigInt();
+  }
+
+  get strategy(): Address {
+    return this._call.inputValues[4].value.toAddress();
+  }
+}
+
+export class CalculateShareManagementCall__Outputs {
+  _call: CalculateShareManagementCall;
+
+  constructor(call: CalculateShareManagementCall) {
+    this._call = call;
+  }
+
+  get value0(): CalculateShareManagementCallValue0Struct {
+    return this._call.outputValues[0].value.toTuple() as CalculateShareManagementCallValue0Struct;
+  }
+}
+
+export class CalculateShareManagementCallValue0Struct extends ethereum.Tuple {
+  get sharesToBurn(): BigInt {
+    return this[0].toBigInt();
+  }
+
+  get accountantFeesShares(): BigInt {
+    return this[1].toBigInt();
+  }
+
+  get protocolFeesShares(): BigInt {
+    return this[2].toBigInt();
+  }
+}
+
 export class DecreaseAllowanceCall extends ethereum.Call {
   get inputs(): DecreaseAllowanceCall__Inputs {
     return new DecreaseAllowanceCall__Inputs(this);
@@ -3399,8 +3529,8 @@ export class HandleShareBurnsAndIssuesCall__Inputs {
     return this._call.inputValues[0].value.toTuple() as HandleShareBurnsAndIssuesCallSharesStruct;
   }
 
-  get fees(): HandleShareBurnsAndIssuesCallFeesStruct {
-    return this._call.inputValues[1].value.toTuple() as HandleShareBurnsAndIssuesCallFeesStruct;
+  get _fees(): HandleShareBurnsAndIssuesCall_feesStruct {
+    return this._call.inputValues[1].value.toTuple() as HandleShareBurnsAndIssuesCall_feesStruct;
   }
 
   get gain(): BigInt {
@@ -3446,7 +3576,7 @@ export class HandleShareBurnsAndIssuesCallSharesStruct extends ethereum.Tuple {
   }
 }
 
-export class HandleShareBurnsAndIssuesCallFeesStruct extends ethereum.Tuple {
+export class HandleShareBurnsAndIssuesCall_feesStruct extends ethereum.Tuple {
   get totalFees(): BigInt {
     return this[0].toBigInt();
   }
