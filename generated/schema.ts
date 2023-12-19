@@ -516,6 +516,42 @@ export class Vault extends Entity {
   set totalIdleAmount(value: BigInt) {
     this.set("totalIdleAmount", Value.fromBigInt(value));
   }
+
+  get totalFees(): BigInt {
+    let value = this.get("totalFees");
+    return value.toBigInt();
+  }
+
+  set totalFees(value: BigInt) {
+    this.set("totalFees", Value.fromBigInt(value));
+  }
+
+  get totalRefunds(): BigInt {
+    let value = this.get("totalRefunds");
+    return value.toBigInt();
+  }
+
+  set totalRefunds(value: BigInt) {
+    this.set("totalRefunds", Value.fromBigInt(value));
+  }
+
+  get protocolFees(): BigInt {
+    let value = this.get("protocolFees");
+    return value.toBigInt();
+  }
+
+  set protocolFees(value: BigInt) {
+    this.set("protocolFees", Value.fromBigInt(value));
+  }
+
+  get protocolFeeRecipient(): Bytes {
+    let value = this.get("protocolFeeRecipient");
+    return value.toBytes();
+  }
+
+  set protocolFeeRecipient(value: Bytes) {
+    this.set("protocolFeeRecipient", Value.fromBytes(value));
+  }
 }
 
 export class VaultUpdate extends Entity {

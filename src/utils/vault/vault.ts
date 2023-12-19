@@ -1,4 +1,4 @@
-import { Address, ethereum, BigInt, log } from '@graphprotocol/graph-ts';
+import { Address, ethereum, BigInt, log, Bytes } from '@graphprotocol/graph-ts';
 import {
   AccountVaultPosition,
   AccountVaultPositionUpdate,
@@ -54,6 +54,10 @@ const createNewVaultFromAddress = (
   vaultEntity.profitMaxUnlockTime = BIGINT_ZERO;
   vaultEntity.totalDebtAmount = BIGINT_ZERO;
   vaultEntity.totalIdleAmount = BIGINT_ZERO;
+  vaultEntity.totalFees = BIGINT_ZERO;
+  vaultEntity.totalRefunds = BIGINT_ZERO;
+  vaultEntity.protocolFees = BIGINT_ZERO;
+  vaultEntity.protocolFeeRecipient = Bytes.fromHexString(ZERO_ADDRESS) as Bytes;
   vaultEntity.useDefaultQueue = true;
 
   vaultEntity.sharesSupply = BIGINT_ZERO;
@@ -756,6 +760,41 @@ export function updateWithdrawLimitModule(
     );
 
     vault.withdrawLimitModule = withdrawLimitModule;
+    vault.save();
+  }
+}
+
+export function updateFees(
+  vaultAddress: Address,
+  transaction: Transaction,
+  totalFees: BigInt,
+  totalRefunds: BigInt,
+  protocolFees: BigInt,
+  protocolFeeRecipient: Address
+): void {
+  let vault = Vault.load(vaultAddress.toHexString());
+  if (vault === null) {
+    log.warning(
+      'Failed to update fees, vault does not exist. Vault address: {} Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+    return;
+  } else {
+    log.info(
+      'Vault fees updated. Address: {} on Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+
+    vault.totalFees = totalFees;
+    vault.totalRefunds = totalRefunds;
+    vault.protocolFees = protocolFees;
+    vault.protocolFeeRecipient = protocolFeeRecipient;
     vault.save();
   }
 }

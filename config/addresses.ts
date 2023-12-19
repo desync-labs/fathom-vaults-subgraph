@@ -11,11 +11,11 @@ export class Addresses {
   
   // AS compiler does not like const
   export let addresses: Addresses = {
-    FathomVault: '0xEd4e0f720E5C7b409492DE967d2da0e9dd24b8C9',
-    StrategyManager: '0xE5D8b20Cf1B1FCf7190EA992f57185aaa4b78Dcb',
-    SharesManager: '0xcdc41A34DD91AEBc86Cab288a1368021bB2A8D6a',
-    Governance: '0xd1402674Bb51D6b9d051Cf620778054C5a17801b',
-    Setters: '0x3E2E59165111c2F181583cB5Bca59852643Ec7C8',
-    blockNumber: '57960000',
+    FathomVault: '0x06BccADd65E50fC8fFbF16f62891b7d4e26bEFFB',
+    StrategyManager: '0x699d806A62287dB249A568525F791d37c99A5307',
+    SharesManager: '0x8c892F0dEE6E599f22B83688E23D074b9eaCa2cb',
+    Governance: '0x5e3dC0352eE37bd420BC0950C3B7A6c56A0d902a',
+    Setters: '0x66cc60dd0cbD3D59Fc16e92f5Af22d26A38100cB',
+    blockNumber: '57980000',
     network: 'apothem'
   }

@@ -502,6 +502,36 @@ export class UpdateWithdrawLimitModule__Params {
   }
 }
 
+export class UpdatedFees extends ethereum.Event {
+  get params(): UpdatedFees__Params {
+    return new UpdatedFees__Params(this);
+  }
+}
+
+export class UpdatedFees__Params {
+  _event: UpdatedFees;
+
+  constructor(event: UpdatedFees) {
+    this._event = event;
+  }
+
+  get totalFees(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get totalRefunds(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get protocolFees(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get protocolFeeRecipient(): Address {
+    return this._event.parameters[3].value.toAddress();
+  }
+}
+
 export class UpdatedMaxDebtForStrategy extends ethereum.Event {
   get params(): UpdatedMaxDebtForStrategy__Params {
     return new UpdatedMaxDebtForStrategy__Params(this);
@@ -1861,19 +1891,15 @@ export class SharesManager extends ethereum.SmartContract {
   handleShareBurnsAndIssues(
     shares: SharesManager__handleShareBurnsAndIssuesInputSharesStruct,
     _fees: SharesManager__handleShareBurnsAndIssuesInput_feesStruct,
-    gain: BigInt,
-    loss: BigInt,
-    strategy: Address
+    gain: BigInt
   ): SharesManager__handleShareBurnsAndIssuesResult {
     let result = super.call(
       "handleShareBurnsAndIssues",
-      "handleShareBurnsAndIssues((uint256,uint256,uint256),(uint256,uint256,uint256,address),uint256,uint256,address):(uint256,uint256)",
+      "handleShareBurnsAndIssues((uint256,uint256,uint256),(uint256,uint256,uint256,address),uint256):(uint256,uint256)",
       [
         ethereum.Value.fromTuple(shares),
         ethereum.Value.fromTuple(_fees),
-        ethereum.Value.fromUnsignedBigInt(gain),
-        ethereum.Value.fromUnsignedBigInt(loss),
-        ethereum.Value.fromAddress(strategy)
+        ethereum.Value.fromUnsignedBigInt(gain)
       ]
     );
 
@@ -1886,19 +1912,15 @@ export class SharesManager extends ethereum.SmartContract {
   try_handleShareBurnsAndIssues(
     shares: SharesManager__handleShareBurnsAndIssuesInputSharesStruct,
     _fees: SharesManager__handleShareBurnsAndIssuesInput_feesStruct,
-    gain: BigInt,
-    loss: BigInt,
-    strategy: Address
+    gain: BigInt
   ): ethereum.CallResult<SharesManager__handleShareBurnsAndIssuesResult> {
     let result = super.tryCall(
       "handleShareBurnsAndIssues",
-      "handleShareBurnsAndIssues((uint256,uint256,uint256),(uint256,uint256,uint256,address),uint256,uint256,address):(uint256,uint256)",
+      "handleShareBurnsAndIssues((uint256,uint256,uint256),(uint256,uint256,uint256,address),uint256):(uint256,uint256)",
       [
         ethereum.Value.fromTuple(shares),
         ethereum.Value.fromTuple(_fees),
-        ethereum.Value.fromUnsignedBigInt(gain),
-        ethereum.Value.fromUnsignedBigInt(loss),
-        ethereum.Value.fromAddress(strategy)
+        ethereum.Value.fromUnsignedBigInt(gain)
       ]
     );
     if (result.reverted) {
@@ -3535,14 +3557,6 @@ export class HandleShareBurnsAndIssuesCall__Inputs {
 
   get gain(): BigInt {
     return this._call.inputValues[2].value.toBigInt();
-  }
-
-  get loss(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
-  }
-
-  get strategy(): Address {
-    return this._call.inputValues[4].value.toAddress();
   }
 }
 

@@ -420,6 +420,36 @@ export class UpdateWithdrawLimitModule__Params {
   }
 }
 
+export class UpdatedFees extends ethereum.Event {
+  get params(): UpdatedFees__Params {
+    return new UpdatedFees__Params(this);
+  }
+}
+
+export class UpdatedFees__Params {
+  _event: UpdatedFees;
+
+  constructor(event: UpdatedFees) {
+    this._event = event;
+  }
+
+  get totalFees(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get totalRefunds(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get protocolFees(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get protocolFeeRecipient(): Address {
+    return this._event.parameters[3].value.toAddress();
+  }
+}
+
 export class UpdatedMaxDebtForStrategy extends ethereum.Event {
   get params(): UpdatedMaxDebtForStrategy__Params {
     return new UpdatedMaxDebtForStrategy__Params(this);

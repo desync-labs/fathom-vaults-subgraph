@@ -74,6 +74,8 @@ dataSources:
           handler: handleUpdatedMaxDebtForStrategy
         - event: DebtUpdated(indexed address,uint256,uint256)
           handler: handleDebtUpdated
+        - event: UpdatedFees(indexed uint256,indexed uint256,indexed uint256,address)
+          handler: handleUpdatedFees
   - kind: ethereum/contract
     name: SharesManager
     network: mainnet
