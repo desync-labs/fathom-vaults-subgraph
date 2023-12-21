@@ -3,7 +3,7 @@ import {
   RoleSet,
   UpdateRoleManager,
   DebtPurchased,
-} from "../../generated/FathomVault/FathomVault"
+} from "../../generated/FathomVault/VaultPackage"
   import {
     getOrCreateTransactionFromEvent,
   } from '../utils/transaction';

@@ -8,7 +8,7 @@ dataSources:
     name: FathomVault
     network: mainnet
     source:
-      abi: FathomVault
+      abi: VaultPackage
       address: "{{FathomVault}}"
       startBlock: {{blockNumber}}
     mapping:
@@ -32,8 +32,8 @@ dataSources:
         - StrategyReportResult
         - VaultDayData
       abis:
-        - name: FathomVault
-          file: ./abis/FathomVault.json
+        - name: VaultPackage
+          file: ./abis/VaultPackage.json
       eventHandlers:
         - event: RoleSet(indexed address,bytes32)
           handler: handleRoleSet
@@ -45,7 +45,7 @@ dataSources:
     name: StrategyManager
     network: mainnet
     source:
-      abi: StrategyManager
+      abi: StrategyManagerPackage
       address: "{{StrategyManager}}" # Replace with the actual address variable
       startBlock: {{blockNumber}} # Replace with the appropriate start block
     mapping:
@@ -59,12 +59,12 @@ dataSources:
         - StrategyReportResult
         - Transaction
       abis:
-        - name: StrategyManager
-          file: ./abis/StrategyManager.json
-        - name: FathomVault
-          file: ./abis/FathomVault.json
-        - name: SharesManager
-          file: ./abis/SharesManager.json
+        - name: StrategyManagerPackage
+          file: ./abis/StrategyManagerPackage.json
+        - name: SharesManagerPackage
+          file: ./abis/SharesManagerPackage.json
+        - name: VaultPackage
+          file: ./abis/VaultPackage.json
       eventHandlers:
         - event: StrategyChanged(indexed address,uint8)
           handler: handleStrategyChanged
@@ -80,7 +80,7 @@ dataSources:
     name: SharesManager
     network: mainnet
     source:
-      abi: SharesManager
+      abi: SharesManagerPackage
       address: "{{SharesManager}}" # Replace with the actual address variable
       startBlock: {{blockNumber}} # Replace with the appropriate start block
     mapping:
@@ -93,10 +93,10 @@ dataSources:
         - Transaction
         - Vault
       abis:
-        - name: SharesManager
-          file: ./abis/SharesManager.json
-        - name: FathomVault
-          file: ./abis/FathomVault.json
+        - name: SharesManagerPackage
+          file: ./abis/SharesManagerPackage.json
+        - name: VaultPackage
+          file: ./abis/VaultPackage.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -112,7 +112,7 @@ dataSources:
     name: Governance
     network: mainnet
     source:
-      abi: Governance
+      abi: GovernancePackage
       address: "{{Governance}}" # Replace with the actual address variable
       startBlock: {{blockNumber}} # Replace with the appropriate start block
     mapping:
@@ -124,10 +124,8 @@ dataSources:
         - Transaction
         - Vault
       abis:
-        - name: Governance
-          file: ./abis/Governance.json
-        - name: FathomVault
-          file: ./abis/FathomVault.json
+        - name: GovernancePackage
+          file: ./abis/GovernancePackage.json
       eventHandlers:
         - event: DebtPurchased(indexed address,uint256)
           handler: handleDebtPurchased
@@ -143,7 +141,7 @@ dataSources:
     name: Setters
     network: mainnet
     source:
-      abi: Setters
+      abi: SettersPackage
       address: "{{Setters}}" # Replace with the actual address variable
       startBlock: {{blockNumber}} # Replace with the appropriate start block
     mapping:
@@ -155,10 +153,8 @@ dataSources:
         - Transaction
         - Vault
       abis:
-        - name: Setters
-          file: ./abis/Setters.json
-        - name: FathomVault
-          file: ./abis/FathomVault.json
+        - name: SettersPackage
+          file: ./abis/SettersPackage.json
       eventHandlers:
         - event: UpdateAccountant(indexed address)
           handler: handleUpdateAccountant
@@ -182,7 +178,7 @@ templates:
     name: FathomVault
     network: mainnet
     source:
-      abi: FathomVault
+      abi: VaultPackage
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.3
@@ -204,8 +200,8 @@ templates:
         - StrategyReportResult
         - VaultDayData
       abis:
-        - name: FathomVault
-          file: ./abis/FathomVault.json
+        - name: VaultPackage
+          file: ./abis/VaultPackage.json
       eventHandlers:
         - event: DebtUpdated(indexed address,uint256,uint256)
           handler: handleDebtUpdated

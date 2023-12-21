@@ -476,7 +476,7 @@ export class UpdatedMaxDebtForStrategy__Params {
   }
 }
 
-export class Governance__feesResult {
+export class SettersPackage__feesResult {
   value0: BigInt;
   value1: BigInt;
   value2: BigInt;
@@ -499,7 +499,7 @@ export class Governance__feesResult {
   }
 }
 
-export class Governance__strategiesResult {
+export class SettersPackage__strategiesResult {
   value0: BigInt;
   value1: BigInt;
   value2: BigInt;
@@ -522,9 +522,9 @@ export class Governance__strategiesResult {
   }
 }
 
-export class Governance extends ethereum.SmartContract {
-  static bind(address: Address): Governance {
-    return new Governance("Governance", address);
+export class SettersPackage extends ethereum.SmartContract {
+  static bind(address: Address): SettersPackage {
+    return new SettersPackage("SettersPackage", address);
   }
 
   ACCOUNTANT_MANAGER(): Bytes {
@@ -1097,14 +1097,14 @@ export class Governance extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  fees(): Governance__feesResult {
+  fees(): SettersPackage__feesResult {
     let result = super.call(
       "fees",
       "fees():(uint256,uint256,uint256,address)",
       []
     );
 
-    return new Governance__feesResult(
+    return new SettersPackage__feesResult(
       result[0].toBigInt(),
       result[1].toBigInt(),
       result[2].toBigInt(),
@@ -1112,7 +1112,7 @@ export class Governance extends ethereum.SmartContract {
     );
   }
 
-  try_fees(): ethereum.CallResult<Governance__feesResult> {
+  try_fees(): ethereum.CallResult<SettersPackage__feesResult> {
     let result = super.tryCall(
       "fees",
       "fees():(uint256,uint256,uint256,address)",
@@ -1123,7 +1123,7 @@ export class Governance extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new Governance__feesResult(
+      new SettersPackage__feesResult(
         value[0].toBigInt(),
         value[1].toBigInt(),
         value[2].toBigInt(),
@@ -1448,14 +1448,14 @@ export class Governance extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  strategies(param0: Address): Governance__strategiesResult {
+  strategies(param0: Address): SettersPackage__strategiesResult {
     let result = super.call(
       "strategies",
       "strategies(address):(uint256,uint256,uint256,uint256)",
       [ethereum.Value.fromAddress(param0)]
     );
 
-    return new Governance__strategiesResult(
+    return new SettersPackage__strategiesResult(
       result[0].toBigInt(),
       result[1].toBigInt(),
       result[2].toBigInt(),
@@ -1465,7 +1465,7 @@ export class Governance extends ethereum.SmartContract {
 
   try_strategies(
     param0: Address
-  ): ethereum.CallResult<Governance__strategiesResult> {
+  ): ethereum.CallResult<SettersPackage__strategiesResult> {
     let result = super.tryCall(
       "strategies",
       "strategies(address):(uint256,uint256,uint256,uint256)",
@@ -1476,7 +1476,7 @@ export class Governance extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new Governance__strategiesResult(
+      new SettersPackage__strategiesResult(
         value[0].toBigInt(),
         value[1].toBigInt(),
         value[2].toBigInt(),
@@ -1643,70 +1643,6 @@ export class Governance extends ethereum.SmartContract {
   }
 }
 
-export class ConstructorCall extends ethereum.Call {
-  get inputs(): ConstructorCall__Inputs {
-    return new ConstructorCall__Inputs(this);
-  }
-
-  get outputs(): ConstructorCall__Outputs {
-    return new ConstructorCall__Outputs(this);
-  }
-}
-
-export class ConstructorCall__Inputs {
-  _call: ConstructorCall;
-
-  constructor(call: ConstructorCall) {
-    this._call = call;
-  }
-
-  get _sharesManager(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class ConstructorCall__Outputs {
-  _call: ConstructorCall;
-
-  constructor(call: ConstructorCall) {
-    this._call = call;
-  }
-}
-
-export class BuyDebtCall extends ethereum.Call {
-  get inputs(): BuyDebtCall__Inputs {
-    return new BuyDebtCall__Inputs(this);
-  }
-
-  get outputs(): BuyDebtCall__Outputs {
-    return new BuyDebtCall__Outputs(this);
-  }
-}
-
-export class BuyDebtCall__Inputs {
-  _call: BuyDebtCall;
-
-  constructor(call: BuyDebtCall) {
-    this._call = call;
-  }
-
-  get strategy(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get amount(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class BuyDebtCall__Outputs {
-  _call: BuyDebtCall;
-
-  constructor(call: BuyDebtCall) {
-    this._call = call;
-  }
-}
-
 export class GrantRoleCall extends ethereum.Call {
   get inputs(): GrantRoleCall__Inputs {
     return new GrantRoleCall__Inputs(this);
@@ -1737,6 +1673,36 @@ export class GrantRoleCall__Outputs {
   _call: GrantRoleCall;
 
   constructor(call: GrantRoleCall) {
+    this._call = call;
+  }
+}
+
+export class InitializeCall extends ethereum.Call {
+  get inputs(): InitializeCall__Inputs {
+    return new InitializeCall__Inputs(this);
+  }
+
+  get outputs(): InitializeCall__Outputs {
+    return new InitializeCall__Outputs(this);
+  }
+}
+
+export class InitializeCall__Inputs {
+  _call: InitializeCall;
+
+  constructor(call: InitializeCall) {
+    this._call = call;
+  }
+
+  get _sharesManager(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class InitializeCall__Outputs {
+  _call: InitializeCall;
+
+  constructor(call: InitializeCall) {
     this._call = call;
   }
 }
@@ -1809,28 +1775,242 @@ export class RevokeRoleCall__Outputs {
   }
 }
 
-export class ShutdownVaultCall extends ethereum.Call {
-  get inputs(): ShutdownVaultCall__Inputs {
-    return new ShutdownVaultCall__Inputs(this);
+export class SetAccountantCall extends ethereum.Call {
+  get inputs(): SetAccountantCall__Inputs {
+    return new SetAccountantCall__Inputs(this);
   }
 
-  get outputs(): ShutdownVaultCall__Outputs {
-    return new ShutdownVaultCall__Outputs(this);
+  get outputs(): SetAccountantCall__Outputs {
+    return new SetAccountantCall__Outputs(this);
   }
 }
 
-export class ShutdownVaultCall__Inputs {
-  _call: ShutdownVaultCall;
+export class SetAccountantCall__Inputs {
+  _call: SetAccountantCall;
 
-  constructor(call: ShutdownVaultCall) {
+  constructor(call: SetAccountantCall) {
+    this._call = call;
+  }
+
+  get newAccountant(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class SetAccountantCall__Outputs {
+  _call: SetAccountantCall;
+
+  constructor(call: SetAccountantCall) {
     this._call = call;
   }
 }
 
-export class ShutdownVaultCall__Outputs {
-  _call: ShutdownVaultCall;
+export class SetDefaultQueueCall extends ethereum.Call {
+  get inputs(): SetDefaultQueueCall__Inputs {
+    return new SetDefaultQueueCall__Inputs(this);
+  }
 
-  constructor(call: ShutdownVaultCall) {
+  get outputs(): SetDefaultQueueCall__Outputs {
+    return new SetDefaultQueueCall__Outputs(this);
+  }
+}
+
+export class SetDefaultQueueCall__Inputs {
+  _call: SetDefaultQueueCall;
+
+  constructor(call: SetDefaultQueueCall) {
+    this._call = call;
+  }
+
+  get newDefaultQueue(): Array<Address> {
+    return this._call.inputValues[0].value.toAddressArray();
+  }
+}
+
+export class SetDefaultQueueCall__Outputs {
+  _call: SetDefaultQueueCall;
+
+  constructor(call: SetDefaultQueueCall) {
+    this._call = call;
+  }
+}
+
+export class SetDepositLimitCall extends ethereum.Call {
+  get inputs(): SetDepositLimitCall__Inputs {
+    return new SetDepositLimitCall__Inputs(this);
+  }
+
+  get outputs(): SetDepositLimitCall__Outputs {
+    return new SetDepositLimitCall__Outputs(this);
+  }
+}
+
+export class SetDepositLimitCall__Inputs {
+  _call: SetDepositLimitCall;
+
+  constructor(call: SetDepositLimitCall) {
+    this._call = call;
+  }
+
+  get _depositLimit(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class SetDepositLimitCall__Outputs {
+  _call: SetDepositLimitCall;
+
+  constructor(call: SetDepositLimitCall) {
+    this._call = call;
+  }
+}
+
+export class SetDepositLimitModuleCall extends ethereum.Call {
+  get inputs(): SetDepositLimitModuleCall__Inputs {
+    return new SetDepositLimitModuleCall__Inputs(this);
+  }
+
+  get outputs(): SetDepositLimitModuleCall__Outputs {
+    return new SetDepositLimitModuleCall__Outputs(this);
+  }
+}
+
+export class SetDepositLimitModuleCall__Inputs {
+  _call: SetDepositLimitModuleCall;
+
+  constructor(call: SetDepositLimitModuleCall) {
+    this._call = call;
+  }
+
+  get _depositLimitModule(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class SetDepositLimitModuleCall__Outputs {
+  _call: SetDepositLimitModuleCall;
+
+  constructor(call: SetDepositLimitModuleCall) {
+    this._call = call;
+  }
+}
+
+export class SetMinimumTotalIdleCall extends ethereum.Call {
+  get inputs(): SetMinimumTotalIdleCall__Inputs {
+    return new SetMinimumTotalIdleCall__Inputs(this);
+  }
+
+  get outputs(): SetMinimumTotalIdleCall__Outputs {
+    return new SetMinimumTotalIdleCall__Outputs(this);
+  }
+}
+
+export class SetMinimumTotalIdleCall__Inputs {
+  _call: SetMinimumTotalIdleCall;
+
+  constructor(call: SetMinimumTotalIdleCall) {
+    this._call = call;
+  }
+
+  get _minimumTotalIdle(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class SetMinimumTotalIdleCall__Outputs {
+  _call: SetMinimumTotalIdleCall;
+
+  constructor(call: SetMinimumTotalIdleCall) {
+    this._call = call;
+  }
+}
+
+export class SetProfitMaxUnlockTimeCall extends ethereum.Call {
+  get inputs(): SetProfitMaxUnlockTimeCall__Inputs {
+    return new SetProfitMaxUnlockTimeCall__Inputs(this);
+  }
+
+  get outputs(): SetProfitMaxUnlockTimeCall__Outputs {
+    return new SetProfitMaxUnlockTimeCall__Outputs(this);
+  }
+}
+
+export class SetProfitMaxUnlockTimeCall__Inputs {
+  _call: SetProfitMaxUnlockTimeCall;
+
+  constructor(call: SetProfitMaxUnlockTimeCall) {
+    this._call = call;
+  }
+
+  get _newProfitMaxUnlockTime(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class SetProfitMaxUnlockTimeCall__Outputs {
+  _call: SetProfitMaxUnlockTimeCall;
+
+  constructor(call: SetProfitMaxUnlockTimeCall) {
+    this._call = call;
+  }
+}
+
+export class SetUseDefaultQueueCall extends ethereum.Call {
+  get inputs(): SetUseDefaultQueueCall__Inputs {
+    return new SetUseDefaultQueueCall__Inputs(this);
+  }
+
+  get outputs(): SetUseDefaultQueueCall__Outputs {
+    return new SetUseDefaultQueueCall__Outputs(this);
+  }
+}
+
+export class SetUseDefaultQueueCall__Inputs {
+  _call: SetUseDefaultQueueCall;
+
+  constructor(call: SetUseDefaultQueueCall) {
+    this._call = call;
+  }
+
+  get _useDefaultQueue(): boolean {
+    return this._call.inputValues[0].value.toBoolean();
+  }
+}
+
+export class SetUseDefaultQueueCall__Outputs {
+  _call: SetUseDefaultQueueCall;
+
+  constructor(call: SetUseDefaultQueueCall) {
+    this._call = call;
+  }
+}
+
+export class SetWithdrawLimitModuleCall extends ethereum.Call {
+  get inputs(): SetWithdrawLimitModuleCall__Inputs {
+    return new SetWithdrawLimitModuleCall__Inputs(this);
+  }
+
+  get outputs(): SetWithdrawLimitModuleCall__Outputs {
+    return new SetWithdrawLimitModuleCall__Outputs(this);
+  }
+}
+
+export class SetWithdrawLimitModuleCall__Inputs {
+  _call: SetWithdrawLimitModuleCall;
+
+  constructor(call: SetWithdrawLimitModuleCall) {
+    this._call = call;
+  }
+
+  get _withdrawLimitModule(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class SetWithdrawLimitModuleCall__Outputs {
+  _call: SetWithdrawLimitModuleCall;
+
+  constructor(call: SetWithdrawLimitModuleCall) {
     this._call = call;
   }
 }

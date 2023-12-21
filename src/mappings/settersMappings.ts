@@ -8,14 +8,14 @@ import {
   UpdateProfitMaxUnlockTime,
   UpdateDepositLimitModule,
   UpdateWithdrawLimitModule
-} from "../../generated/FathomVault/FathomVault"
+} from "../../generated/FathomVault/VaultPackage"
   import {
     getOrCreateTransactionFromEvent,
   } from '../utils/transaction';
   import * as vaultLibrary from '../utils/vault/vault';
 
 // Constant for the FathomVault contract address
-const FATHOM_VAULT_ADDRESS = Address.fromString("0x06BccADd65E50fC8fFbF16f62891b7d4e26bEFFB");
+const FATHOM_VAULT_ADDRESS = Address.fromString("0x6b2d4f6Abb645162128b19053408B88531094Dd9");
 
 export function handleUpdateAccountant(event: UpdateAccountant): void {
   let ethTransaction = getOrCreateTransactionFromEvent(

@@ -476,7 +476,7 @@ export class UpdatedMaxDebtForStrategy__Params {
   }
 }
 
-export class FathomVault__feesResult {
+export class VaultPackage__feesResult {
   value0: BigInt;
   value1: BigInt;
   value2: BigInt;
@@ -499,7 +499,7 @@ export class FathomVault__feesResult {
   }
 }
 
-export class FathomVault__processReportResult {
+export class VaultPackage__processReportResult {
   value0: BigInt;
   value1: BigInt;
 
@@ -516,7 +516,7 @@ export class FathomVault__processReportResult {
   }
 }
 
-export class FathomVault__strategiesResult {
+export class VaultPackage__strategiesResult {
   value0: BigInt;
   value1: BigInt;
   value2: BigInt;
@@ -539,9 +539,9 @@ export class FathomVault__strategiesResult {
   }
 }
 
-export class FathomVault extends ethereum.SmartContract {
-  static bind(address: Address): FathomVault {
-    return new FathomVault("FathomVault", address);
+export class VaultPackage extends ethereum.SmartContract {
+  static bind(address: Address): VaultPackage {
+    return new VaultPackage("VaultPackage", address);
   }
 
   ACCOUNTANT_MANAGER(): Bytes {
@@ -1325,14 +1325,14 @@ export class FathomVault extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  fees(): FathomVault__feesResult {
+  fees(): VaultPackage__feesResult {
     let result = super.call(
       "fees",
       "fees():(uint256,uint256,uint256,address)",
       []
     );
 
-    return new FathomVault__feesResult(
+    return new VaultPackage__feesResult(
       result[0].toBigInt(),
       result[1].toBigInt(),
       result[2].toBigInt(),
@@ -1340,7 +1340,7 @@ export class FathomVault extends ethereum.SmartContract {
     );
   }
 
-  try_fees(): ethereum.CallResult<FathomVault__feesResult> {
+  try_fees(): ethereum.CallResult<VaultPackage__feesResult> {
     let result = super.tryCall(
       "fees",
       "fees():(uint256,uint256,uint256,address)",
@@ -1351,7 +1351,7 @@ export class FathomVault extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new FathomVault__feesResult(
+      new VaultPackage__feesResult(
         value[0].toBigInt(),
         value[1].toBigInt(),
         value[2].toBigInt(),
@@ -1899,14 +1899,14 @@ export class FathomVault extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  processReport(strategy: Address): FathomVault__processReportResult {
+  processReport(strategy: Address): VaultPackage__processReportResult {
     let result = super.call(
       "processReport",
       "processReport(address):(uint256,uint256)",
       [ethereum.Value.fromAddress(strategy)]
     );
 
-    return new FathomVault__processReportResult(
+    return new VaultPackage__processReportResult(
       result[0].toBigInt(),
       result[1].toBigInt()
     );
@@ -1914,7 +1914,7 @@ export class FathomVault extends ethereum.SmartContract {
 
   try_processReport(
     strategy: Address
-  ): ethereum.CallResult<FathomVault__processReportResult> {
+  ): ethereum.CallResult<VaultPackage__processReportResult> {
     let result = super.tryCall(
       "processReport",
       "processReport(address):(uint256,uint256)",
@@ -1925,7 +1925,7 @@ export class FathomVault extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new FathomVault__processReportResult(
+      new VaultPackage__processReportResult(
         value[0].toBigInt(),
         value[1].toBigInt()
       )
@@ -2108,14 +2108,14 @@ export class FathomVault extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  strategies(param0: Address): FathomVault__strategiesResult {
+  strategies(param0: Address): VaultPackage__strategiesResult {
     let result = super.call(
       "strategies",
       "strategies(address):(uint256,uint256,uint256,uint256)",
       [ethereum.Value.fromAddress(param0)]
     );
 
-    return new FathomVault__strategiesResult(
+    return new VaultPackage__strategiesResult(
       result[0].toBigInt(),
       result[1].toBigInt(),
       result[2].toBigInt(),
@@ -2125,7 +2125,7 @@ export class FathomVault extends ethereum.SmartContract {
 
   try_strategies(
     param0: Address
-  ): ethereum.CallResult<FathomVault__strategiesResult> {
+  ): ethereum.CallResult<VaultPackage__strategiesResult> {
     let result = super.tryCall(
       "strategies",
       "strategies(address):(uint256,uint256,uint256,uint256)",
@@ -2136,7 +2136,7 @@ export class FathomVault extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new FathomVault__strategiesResult(
+      new VaultPackage__strategiesResult(
         value[0].toBigInt(),
         value[1].toBigInt(),
         value[2].toBigInt(),
@@ -2493,52 +2493,6 @@ export class FathomVault extends ethereum.SmartContract {
   }
 }
 
-export class ConstructorCall extends ethereum.Call {
-  get inputs(): ConstructorCall__Inputs {
-    return new ConstructorCall__Inputs(this);
-  }
-
-  get outputs(): ConstructorCall__Outputs {
-    return new ConstructorCall__Outputs(this);
-  }
-}
-
-export class ConstructorCall__Inputs {
-  _call: ConstructorCall;
-
-  constructor(call: ConstructorCall) {
-    this._call = call;
-  }
-
-  get _profitMaxUnlockTime(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get _strategyManagerAddress(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get _sharesManagerAddress(): Address {
-    return this._call.inputValues[2].value.toAddress();
-  }
-
-  get _settersAddress(): Address {
-    return this._call.inputValues[3].value.toAddress();
-  }
-
-  get _governanceAddress(): Address {
-    return this._call.inputValues[4].value.toAddress();
-  }
-}
-
-export class ConstructorCall__Outputs {
-  _call: ConstructorCall;
-
-  constructor(call: ConstructorCall) {
-    this._call = call;
-  }
-}
-
 export class AddStrategyCall extends ethereum.Call {
   get inputs(): AddStrategyCall__Inputs {
     return new AddStrategyCall__Inputs(this);
@@ -2816,6 +2770,52 @@ export class IncreaseAllowanceCall__Outputs {
 
   get value0(): boolean {
     return this._call.outputValues[0].value.toBoolean();
+  }
+}
+
+export class InitializeCall extends ethereum.Call {
+  get inputs(): InitializeCall__Inputs {
+    return new InitializeCall__Inputs(this);
+  }
+
+  get outputs(): InitializeCall__Outputs {
+    return new InitializeCall__Outputs(this);
+  }
+}
+
+export class InitializeCall__Inputs {
+  _call: InitializeCall;
+
+  constructor(call: InitializeCall) {
+    this._call = call;
+  }
+
+  get _profitMaxUnlockTime(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get _strategyManagerAddress(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get _sharesManagerAddress(): Address {
+    return this._call.inputValues[2].value.toAddress();
+  }
+
+  get _settersAddress(): Address {
+    return this._call.inputValues[3].value.toAddress();
+  }
+
+  get _governanceAddress(): Address {
+    return this._call.inputValues[4].value.toAddress();
+  }
+}
+
+export class InitializeCall__Outputs {
+  _call: InitializeCall;
+
+  constructor(call: InitializeCall) {
+    this._call = call;
   }
 }
 

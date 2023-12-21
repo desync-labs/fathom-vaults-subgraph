@@ -8,7 +8,6 @@ import {
   Vault,
   VaultUpdate,
 } from '../../../generated/schema';
-import { FathomVault } from '../../../generated/FathomVault/FathomVault';
 import { FathomVault as VaultTemplate } from '../../../generated/templates';
 import {
   BIGINT_ZERO,
@@ -26,7 +25,8 @@ import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
 import { updateVaultDayData } from './vault-day-data';
 import { booleanToString, removeElementFromArray } from '../commons';
-import { SharesManager } from '../../../generated/SharesManager/SharesManager';
+import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
+import { SharesManagerPackage } from '../../../generated/SharesManager/SharesManagerPackage';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -39,7 +39,7 @@ const createNewVaultFromAddress = (
 ): Vault => {
   let id = vaultAddress.toHexString();
   let vaultEntity = new Vault(id);
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let token = getOrCreateToken(vaultContract.asset());
   let shareToken = getOrCreateToken(sharesManagerAddress);
   vaultEntity.transaction = transaction.id;
@@ -140,7 +140,7 @@ export function deposit(
       sharesMinted.toString(),
     ]
   );
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(receiver);
   let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
 
@@ -196,7 +196,7 @@ export function calculateAmountDeposited(
   sharesManagerAddress: Address,
   sharesMinted: BigInt
 ): BigInt {
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let totalAssets = getTotalAssets(sharesManagerAddress);
   let totalSupply = vaultContract.totalSupply();
   let amount = totalSupply.isZero()
@@ -230,7 +230,7 @@ export function withdraw(
   timestamp: BigInt,
   blockNumber: BigInt
 ): void {
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(from);
   let balancePosition = getBalancePosition(vaultContract, sharesManagerAddress);
   let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
@@ -345,7 +345,7 @@ export function withdraw(
 }
 
 export function transfer(
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   sharesManagerAddress: Address,
   from: Address,
   to: Address,
@@ -386,7 +386,7 @@ export function transfer(
 export function strategyReported(
   transaction: Transaction,
   strategyReport: StrategyReport,
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   vaultAddress: Address,
   SHARES_MANAGER_ADDRESS: Address,
   timestamp: BigInt,
@@ -478,7 +478,7 @@ export function UpdateUseDefaultQueue(
   }
 
 export function getTotalAssets(sharesManager: Address): BigInt {
-  let sharesManagerContract = SharesManager.bind(sharesManager);
+  let sharesManagerContract = SharesManagerPackage.bind(sharesManager);
   let tryTotalAssets = sharesManagerContract.try_totalAssets();
   // TODO Debugging Use totalAssets directly
   let totalAssets = tryTotalAssets.reverted
@@ -487,8 +487,8 @@ export function getTotalAssets(sharesManager: Address): BigInt {
   return totalAssets;
 }
 
-function getBalancePosition(vaultContract: FathomVault, sharesManager: Address): BigInt {
-  let sharesManagerContract = SharesManager.bind(sharesManager);
+function getBalancePosition(vaultContract: VaultPackage, sharesManager: Address): BigInt {
+  let sharesManagerContract = SharesManagerPackage.bind(sharesManager);
   let tryTotalAssets = sharesManagerContract.try_totalAssets();
   // TODO Debugging Use totalAssets directly
   let totalAssets = tryTotalAssets.reverted

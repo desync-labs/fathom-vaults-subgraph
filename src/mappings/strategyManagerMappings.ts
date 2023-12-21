@@ -4,10 +4,8 @@ import {
   StrategyReported,
   DebtUpdated,
   UpdatedMaxDebtForStrategy,
-  StrategyManager,
   UpdatedFees
-} from "../../generated/StrategyManager/StrategyManager"
-import { FathomVault } from "../../generated/FathomVault/FathomVault"
+} from "../../generated/StrategyManager/StrategyManagerPackage"
 import { StrategyReport } from "../../generated/schema"
 import {
     getOrCreateTransactionFromEvent,
@@ -15,10 +13,11 @@ import {
   import { BIGINT_ZERO } from '../utils/constants';
   import * as strategyLibrary from '../utils/strategy/strategy';
   import * as vaultLibrary from '../utils/vault/vault';
+import { VaultPackage } from "../../generated/FathomVault/VaultPackage";
 
 // Constant for the FathomVault contract address
-const FATHOM_VAULT_ADDRESS = Address.fromString("0x06BccADd65E50fC8fFbF16f62891b7d4e26bEFFB");
-const SHARES_MANAGER_ADDRESS = Address.fromString("0x8c892F0dEE6E599f22B83688E23D074b9eaCa2cb");
+const FATHOM_VAULT_ADDRESS = Address.fromString("0x6b2d4f6Abb645162128b19053408B88531094Dd9");
+const SHARES_MANAGER_ADDRESS = Address.fromString("0x940CC73B07DF0B47E1382BDB631EA77D664fc5bf");
 
 export function handleStrategyChanged(event: StrategyChanged): void {
   log.info('[Strategy Manager mappings] Handle strategy changed', []);
@@ -71,7 +70,7 @@ export function handleStrategyReported(event: StrategyReported): void {
     '[Strategy Manager mappings] Updating price per share (strategy reported): {}',
     [event.transaction.hash.toHexString()]
   );
-  let vaultContract = FathomVault.bind(vaultContractAddress);
+  let vaultContract = VaultPackage.bind(vaultContractAddress);
   vaultLibrary.strategyReported(
     ethTransaction,
     strategyReport as StrategyReport,

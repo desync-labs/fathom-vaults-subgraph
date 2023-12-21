@@ -7,10 +7,10 @@ import {
   Transaction,
   Vault,
 } from '../../../generated/schema';
-import { FathomVault } from '../../../generated/FathomVault/FathomVault';
 import * as vaultPositionUpdateLibrary from './vault-position-update';
 import { BIGINT_ZERO, ZERO_ADDRESS } from '../constants';
-import { SharesManager } from '../../../generated/SharesManager/SharesManager';
+import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
+import { SharesManagerPackage } from '../../../generated/SharesManager/SharesManagerPackage';
 
 export function buildId(account: Account, vault: Vault): string {
   return account.id.concat('-').concat(vault.id);
@@ -61,12 +61,12 @@ export function getOrCreate(
 
 export function getBalancePosition(
   account: Account,
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   sharesManager: Address
 ): BigInt {
   log.info('[VaultPosition] GetBalancePosition account  {} ', [account.id]);
   let pricePerShare = vaultContract.pricePerShare();
-  let sharesManagerContract = SharesManager.bind(sharesManager);
+  let sharesManagerContract = SharesManagerPackage.bind(sharesManager);
   let decimals = sharesManagerContract.decimals();
   // (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
@@ -123,7 +123,7 @@ function getBalanceProfit(
 }
 
 export function deposit(
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   sharesManager: Address,
   account: Account,
   vault: Vault,
@@ -198,7 +198,7 @@ export function deposit(
 }
 
 export function withdraw(
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   sharesManager: Address,
   accountVaultPosition: AccountVaultPosition,
   withdrawnAmount: BigInt,
@@ -299,7 +299,7 @@ export function withdrawZero(
 }
 
 export function transferForAccount(
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   sharesManager: Address,
   account: Account,
   vault: Vault,
@@ -403,7 +403,7 @@ export function transferForAccount(
 }
 
 export function transfer(
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   sharesManager: Address,
   fromAccount: Account,
   toAccount: Account,
