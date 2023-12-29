@@ -1,27 +1,11 @@
 {
-  "50": {
-      "xinfin":{
-          "addresses": {
-            "Factory": "0x9fAb572F75008A42c6aF80b36Ab20C76a38ABc4B",
-            "StrategyManager": "0xED32F71Ae7427F1Bb6E53aC8F3e1CD4B8427167C",
-            "SharesManager": "0xF3a519f793E41FB9bd13c5CC664b42cFB0889ee6",
-            "Governance": "0xde5E6d96aB5d558b2976B945e4e858Ca29842554",
-            "Setters": "0xbb221Fe259EB05197dc303C63Cb46b6C99208b99"
-          },
-          "blockNumber":"59776353"    
-      }
-  },
   "51": {
-      "dev":{
-          "addresses": {
-            "FathomVault": "0x06BccADd65E50fC8fFbF16f62891b7d4e26bEFFB",
-            "StrategyManager": "0x699d806A62287dB249A568525F791d37c99A5307",
-            "SharesManager": "0x8c892F0dEE6E599f22B83688E23D074b9eaCa2cb",
-            "Governance": "0x5e3dC0352eE37bd420BC0950C3B7A6c56A0d902a",
-            "Setters": "0x66cc60dd0cbD3D59Fc16e92f5Af22d26A38100cB"
-          },
-          "blockNumber":"57980000"
-      },
-      "network":"apothem"
+    "dev":{
+        "addresses": {
+          "FathomVault": "0x50Af347866A1C2BdA1b29d896cE054FF18225C91"
+        },
+        "blockNumber":"58251668"
+    },
+    "network": "apothem"
   }
 }
