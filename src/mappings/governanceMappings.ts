@@ -1,21 +1,22 @@
 import { Address, log } from "@graphprotocol/graph-ts"
 import {
   DebtUpdated,
-  UpdateDepositLimit,
+  UpdatedDepositLimit,
   DebtPurchased,
   Shutdown,
-  UpdateDepositLimitModule,
-  UpdateWithdrawLimitModule,
-  FathomVault
-} from "../../generated/FathomVault/FathomVault"
-  import {
-    getOrCreateTransactionFromEvent,
-  } from '../utils/transaction';
-  import * as strategyLibrary from '../utils/strategy/strategy';
-  import * as vaultLibrary from '../utils/vault/vault';
+  UpdatedDepositLimitModule,
+  UpdatedWithdrawLimitModule,
+  VaultPackage
+} from "../../generated/FathomVault/VaultPackage"
+import {
+  getOrCreateTransactionFromEvent,
+} from '../utils/transaction';
+import * as strategyLibrary from '../utils/strategy/strategy';
+import * as vaultLibrary from '../utils/vault/vault';
+import { addresses } from "../../config/addresses";
 
 // Constant for the FathomVault contract address
-const FATHOM_VAULT_ADDRESS = Address.fromString("0x06BccADd65E50fC8fFbF16f62891b7d4e26bEFFB");
+const FATHOM_VAULT_ADDRESS = Address.fromString(addresses.FathomVault);
 
 export function handleDebtUpdated(event: DebtUpdated): void {
   log.info('[Governance mappings] Handle debt updated', []);
@@ -33,13 +34,13 @@ export function handleDebtUpdated(event: DebtUpdated): void {
 }
 
 
-export function handleUpdateDepositLimit(event: UpdateDepositLimit): void {
+export function handleUpdatedDepositLimit(event: UpdatedDepositLimit): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateDepositLimit'
+    'UpdatedDepositLimit'
   );
 
-  vaultLibrary.updateDepositLimit(
+  vaultLibrary.UpdatedDepositLimit(
     FATHOM_VAULT_ADDRESS,
     event.params.depositLimit,
     ethTransaction
@@ -73,26 +74,26 @@ export function handleShutdown(event: Shutdown): void {
   );
 }
 
-export function handleUpdateDepositLimitModule(event: UpdateDepositLimitModule): void {
+export function handleUpdatedDepositLimitModule(event: UpdatedDepositLimitModule): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateDepositLimitModule'
+    'UpdatedDepositLimitModule'
   );
 
-  vaultLibrary.updateDepositLimitModule(
+  vaultLibrary.UpdatedDepositLimitModule(
     FATHOM_VAULT_ADDRESS,
     event.params.depositLimitModule,
     ethTransaction
   );
 }
 
-export function handleUpdateWithdrawLimitModule(event: UpdateWithdrawLimitModule): void {
+export function handleUpdatedWithdrawLimitModule(event: UpdatedWithdrawLimitModule): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'WithdrawDepositLimitModule'
   );
 
-  vaultLibrary.updateWithdrawLimitModule(
+  vaultLibrary.UpdatedWithdrawLimitModule(
     FATHOM_VAULT_ADDRESS,
     event.params.withdrawLimitModule,
     ethTransaction

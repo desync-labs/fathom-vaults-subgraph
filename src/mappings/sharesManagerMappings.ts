@@ -1,23 +1,23 @@
 import { Address, log } from "@graphprotocol/graph-ts"
 import {
   DebtUpdated,
-  UpdateDepositLimit,
+  UpdatedDepositLimit,
   Transfer,
   Deposit,
   Withdraw,
-  SharesManager
-} from "../../generated/SharesManager/SharesManager"
-import { FathomVault } from "../../generated/FathomVault/FathomVault"
-  import {
-    getOrCreateTransactionFromEvent,
-  } from '../utils/transaction';
-  import { ZERO_ADDRESS } from '../utils/constants';
-  import * as strategyLibrary from '../utils/strategy/strategy';
-  import * as vaultLibrary from '../utils/vault/vault';
-  import { fromSharesToAmount } from '../utils/commons';
+  VaultPackage
+} from "../../generated/FathomVault/VaultPackage"
+import {
+  getOrCreateTransactionFromEvent,
+} from '../utils/transaction';
+import { ZERO_ADDRESS } from '../utils/constants';
+import * as strategyLibrary from '../utils/strategy/strategy';
+import * as vaultLibrary from '../utils/vault/vault';
+import { fromSharesToAmount } from '../utils/commons';
+import { addresses } from "../../config/addresses";
 
 // Constant for the FathomVault contract address
-const FATHOM_VAULT_ADDRESS = Address.fromString("0x06BccADd65E50fC8fFbF16f62891b7d4e26bEFFB");
+const FATHOM_VAULT_ADDRESS = Address.fromString(addresses.FathomVault)
 
 export function handleDebtUpdated(event: DebtUpdated): void {
   log.info('[Shares Manager mappings] Handle debt updated', []);
@@ -34,13 +34,13 @@ export function handleDebtUpdated(event: DebtUpdated): void {
   );
 }
 
-export function handleUpdateDepositLimit(event: UpdateDepositLimit): void {
+export function handleUpdatedDepositLimit(event: UpdatedDepositLimit): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateDepositLimit'
+    'UpdatedDepositLimit'
   );
 
-  vaultLibrary.updateDepositLimit(
+  vaultLibrary.UpdatedDepositLimit(
     FATHOM_VAULT_ADDRESS,
     event.params.depositLimit,
     ethTransaction
@@ -78,7 +78,7 @@ export function handleTransfer(event: Transfer): void {
       event,
       'Transfer'
     );
-    let vaultContract = FathomVault.bind(FATHOM_VAULT_ADDRESS);
+    let vaultContract = VaultPackage.bind(FATHOM_VAULT_ADDRESS);
     let sharesManagerAddress = event.address;
     let totalAssets = vaultLibrary.getTotalAssets(FATHOM_VAULT_ADDRESS);
     let totalSupply = vaultContract.totalSupply();

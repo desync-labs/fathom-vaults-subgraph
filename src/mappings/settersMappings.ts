@@ -1,112 +1,113 @@
 import { Address, log } from "@graphprotocol/graph-ts"
 import {
-  UpdateAccountant,
-  UpdateDefaultQueue,
-  UpdateUseDefaultQueue,
-  UpdateDepositLimit,
-  UpdateMinimumTotalIdle,
-  UpdateProfitMaxUnlockTime,
-  UpdateDepositLimitModule,
-  UpdateWithdrawLimitModule
-} from "../../generated/FathomVault/FathomVault"
-  import {
-    getOrCreateTransactionFromEvent,
-  } from '../utils/transaction';
-  import * as vaultLibrary from '../utils/vault/vault';
+  UpdatedAccountant,
+  UpdatedDefaultQueue,
+  UpdatedUseDefaultQueue,
+  UpdatedDepositLimit,
+  UpdatedMinimumTotalIdle,
+  UpdatedProfitMaxUnlockTime,
+  UpdatedDepositLimitModule,
+  UpdatedWithdrawLimitModule
+} from "../../generated/FathomVault/VaultPackage"
+import {
+  getOrCreateTransactionFromEvent,
+} from '../utils/transaction';
+import * as vaultLibrary from '../utils/vault/vault';
+import { addresses } from "../../config/addresses";
 
 // Constant for the FathomVault contract address
-const FATHOM_VAULT_ADDRESS = Address.fromString("0x06BccADd65E50fC8fFbF16f62891b7d4e26bEFFB");
+const FATHOM_VAULT_ADDRESS = Address.fromString(addresses.FathomVault)
 
-export function handleUpdateAccountant(event: UpdateAccountant): void {
+export function handleUpdatedAccountant(event: UpdatedAccountant): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateAccountant'
+    'UpdatedAccountant'
   );
 
-  vaultLibrary.updateRoleManager(
+  vaultLibrary.UpdatedRoleManager(
     FATHOM_VAULT_ADDRESS,
     event.params.accountant,
     ethTransaction
   );
 }
 
-export function handleUpdateDefaultQueue(event: UpdateDefaultQueue): void {
+export function handleUpdatedDefaultQueue(event: UpdatedDefaultQueue): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateDefaultQueue'
+    'UpdatedDefaultQueue'
   );
 
-  vaultLibrary.UpdateDefaultQueue(event.params.newDefaultQueue, ethTransaction, event);
+  vaultLibrary.UpdatedDefaultQueue(event.params.newDefaultQueue, ethTransaction, event);
 }
 
-export function handleUpdateUseDefaultQueue(event: UpdateUseDefaultQueue): void {
+export function handleUpdatedUseDefaultQueue(event: UpdatedUseDefaultQueue): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateUseDefaultQueue'
+    'UpdatedUseDefaultQueue'
   );
 
-  vaultLibrary.UpdateUseDefaultQueue(event.params.useDefaultQueue, ethTransaction, event);
+  vaultLibrary.UpdatedUseDefaultQueue(event.params.useDefaultQueue, ethTransaction, event);
 }
 
-export function handleUpdateDepositLimit(event: UpdateDepositLimit): void {
+export function handleUpdatedDepositLimit(event: UpdatedDepositLimit): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateDepositLimit'
+    'UpdatedDepositLimit'
   );
 
-  vaultLibrary.updateDepositLimit(
+  vaultLibrary.UpdatedDepositLimit(
     FATHOM_VAULT_ADDRESS,
     event.params.depositLimit,
     ethTransaction
   );
 }
 
-export function handleUpdateMinimumTotalIdle(event: UpdateMinimumTotalIdle): void {
+export function handleUpdatedMinimumTotalIdle(event: UpdatedMinimumTotalIdle): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateMinimumTotalIdle'
+    'UpdatedMinimumTotalIdle'
   );
 
-  vaultLibrary.updateMinimumTotalIdle(
+  vaultLibrary.UpdatedMinimumTotalIdle(
     FATHOM_VAULT_ADDRESS,
     event.params.minimumTotalIdle,
     ethTransaction
   );
 }
 
-export function handleUpdateProfitMaxUnlockTime(event: UpdateProfitMaxUnlockTime): void {
+export function handleUpdatedProfitMaxUnlockTime(event: UpdatedProfitMaxUnlockTime): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateProfitMaxUnlockTime'
+    'UpdatedProfitMaxUnlockTime'
   );
 
-  vaultLibrary.updateProfitMaxUnlockTime(
+  vaultLibrary.UpdatedProfitMaxUnlockTime(
     FATHOM_VAULT_ADDRESS,
     event.params.profitMaxUnlockTime,
     ethTransaction
   );
 }
 
-export function handleUpdateDepositLimitModule(event: UpdateDepositLimitModule): void {
+export function handleUpdatedDepositLimitModule(event: UpdatedDepositLimitModule): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateDepositLimitModule'
+    'UpdatedDepositLimitModule'
   );
 
-  vaultLibrary.updateDepositLimitModule(
+  vaultLibrary.UpdatedDepositLimitModule(
     FATHOM_VAULT_ADDRESS,
     event.params.depositLimitModule,
     ethTransaction
   );
 }
 
-export function handleUpdateWithdrawLimitModule(event: UpdateWithdrawLimitModule): void {
+export function handleUpdatedWithdrawLimitModule(event: UpdatedWithdrawLimitModule): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
     'WithdrawDepositLimitModule'
   );
 
-  vaultLibrary.updateWithdrawLimitModule(
+  vaultLibrary.UpdatedWithdrawLimitModule(
     FATHOM_VAULT_ADDRESS,
     event.params.withdrawLimitModule,
     ethTransaction

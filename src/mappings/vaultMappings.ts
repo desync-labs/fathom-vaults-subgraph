@@ -1,15 +1,15 @@
 import { log } from "@graphprotocol/graph-ts"
 import {
   RoleSet,
-  UpdateRoleManager,
+  UpdatedRoleManager,
   DebtPurchased,
-} from "../../generated/FathomVault/FathomVault"
-  import {
-    getOrCreateTransactionFromEvent,
-  } from '../utils/transaction';
-  import * as strategyLibrary from '../utils/strategy/strategy';
-  import * as vaultLibrary from '../utils/vault/vault';
-  import * as accountLibrary from '../utils/account/account';
+} from "../../generated/FathomVault/VaultPackage"
+import {
+  getOrCreateTransactionFromEvent,
+} from '../utils/transaction';
+import * as strategyLibrary from '../utils/strategy/strategy';
+import * as vaultLibrary from '../utils/vault/vault';
+import * as accountLibrary from '../utils/account/account';
 
 export function handleRoleSet(event: RoleSet): void {
   log.info('[Vault mappings] Handle role set', []);
@@ -19,13 +19,13 @@ export function handleRoleSet(event: RoleSet): void {
   );
 }
 
-export function handleUpdateRoleManager(event: UpdateRoleManager): void {
+export function handleUpdatedRoleManager(event: UpdatedRoleManager): void {
   let ethTransaction = getOrCreateTransactionFromEvent(
     event,
-    'UpdateRoleManager'
+    'UpdatedRoleManager'
   );
 
-  vaultLibrary.updateRoleManager(
+  vaultLibrary.UpdatedRoleManager(
     event.address,
     event.params.roleManager,
     ethTransaction

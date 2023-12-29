@@ -8,12 +8,11 @@ import {
   Vault,
   VaultUpdate,
 } from '../../../generated/schema';
-import { FathomVault } from '../../../generated/FathomVault/FathomVault';
+import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
 import { FathomVault as VaultTemplate } from '../../../generated/templates';
 import {
   BIGINT_ZERO,
   DO_CREATE_VAULT_TEMPLATE,
-  REGISTRY_V3_VAULT_TYPE_LEGACY,
   ZERO_ADDRESS,
 } from '../constants';
 import { getOrCreateToken } from '../token';
@@ -26,7 +25,6 @@ import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
 import { updateVaultDayData } from './vault-day-data';
 import { booleanToString, removeElementFromArray } from '../commons';
-import { SharesManager } from '../../../generated/SharesManager/SharesManager';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -39,7 +37,7 @@ const createNewVaultFromAddress = (
 ): Vault => {
   let id = vaultAddress.toHexString();
   let vaultEntity = new Vault(id);
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let token = getOrCreateToken(vaultContract.asset());
   let shareToken = getOrCreateToken(sharesManagerAddress);
   vaultEntity.transaction = transaction.id;
@@ -140,7 +138,7 @@ export function deposit(
       sharesMinted.toString(),
     ]
   );
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(receiver);
   let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
 
@@ -196,7 +194,7 @@ export function calculateAmountDeposited(
   sharesManagerAddress: Address,
   sharesMinted: BigInt
 ): BigInt {
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let totalAssets = getTotalAssets(sharesManagerAddress);
   let totalSupply = vaultContract.totalSupply();
   let amount = totalSupply.isZero()
@@ -230,7 +228,7 @@ export function withdraw(
   timestamp: BigInt,
   blockNumber: BigInt
 ): void {
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(from);
   let balancePosition = getBalancePosition(vaultContract, sharesManagerAddress);
   let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
@@ -345,7 +343,7 @@ export function withdraw(
 }
 
 export function transfer(
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   sharesManagerAddress: Address,
   from: Address,
   to: Address,
@@ -386,7 +384,7 @@ export function transfer(
 export function strategyReported(
   transaction: Transaction,
   strategyReport: StrategyReport,
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   vaultAddress: Address,
   SHARES_MANAGER_ADDRESS: Address,
   timestamp: BigInt,
@@ -420,7 +418,7 @@ export function strategyReported(
   );
 }
 
-export function UpdateDefaultQueue(
+export function UpdatedDefaultQueue(
   newQueue: Address[],
   ethTransaction: Transaction,
   event: ethereum.Event
@@ -463,7 +461,7 @@ export function UpdateDefaultQueue(
     }
 }
 
-export function UpdateUseDefaultQueue(
+export function UpdatedUseDefaultQueue(
     useDefaultQueue: boolean,
     ethTransaction: Transaction,
     event: ethereum.Event
@@ -478,7 +476,7 @@ export function UpdateUseDefaultQueue(
   }
 
 export function getTotalAssets(sharesManager: Address): BigInt {
-  let sharesManagerContract = SharesManager.bind(sharesManager);
+  let sharesManagerContract = VaultPackage.bind(sharesManager);
   let tryTotalAssets = sharesManagerContract.try_totalAssets();
   // TODO Debugging Use totalAssets directly
   let totalAssets = tryTotalAssets.reverted
@@ -487,8 +485,8 @@ export function getTotalAssets(sharesManager: Address): BigInt {
   return totalAssets;
 }
 
-function getBalancePosition(vaultContract: FathomVault, sharesManager: Address): BigInt {
-  let sharesManagerContract = SharesManager.bind(sharesManager);
+function getBalancePosition(vaultContract: VaultPackage, sharesManager: Address): BigInt {
+  let sharesManagerContract = VaultPackage.bind(sharesManager);
   let tryTotalAssets = sharesManagerContract.try_totalAssets();
   // TODO Debugging Use totalAssets directly
   let totalAssets = tryTotalAssets.reverted
@@ -522,7 +520,7 @@ function getBalancePosition(vaultContract: FathomVault, sharesManager: Address):
   return totalAssets.times(pricePerShare).div(BigInt.fromI32(10).pow(decimals));
 }
 
-export function updateRoleManager(
+export function UpdatedRoleManager(
   vaultAddress: Address,
   roleManager: Address,
   transaction: Transaction
@@ -553,7 +551,7 @@ export function updateRoleManager(
   }
 }
 
-export function updateAccountant(
+export function UpdatedAccountant(
   vaultAddress: Address,
   accountantAddress: Address,
   transaction: Transaction
@@ -581,7 +579,7 @@ export function updateAccountant(
   }
 }
 
-export function updateDepositLimit(
+export function UpdatedDepositLimit(
   vaultAddress: Address,
   depositLimit: BigInt,
   transaction: Transaction
@@ -612,7 +610,7 @@ export function updateDepositLimit(
   }
 }
 
-export function updateMinimumTotalIdle(
+export function UpdatedMinimumTotalIdle(
   vaultAddress: Address,
   minimumTotalIdle: BigInt,
   transaction: Transaction
@@ -643,7 +641,7 @@ export function updateMinimumTotalIdle(
   }
 }
 
-export function updateProfitMaxUnlockTime(
+export function UpdatedProfitMaxUnlockTime(
   vaultAddress: Address,
   profitMaxUnlockTime: BigInt,
   transaction: Transaction
@@ -702,7 +700,7 @@ export function shutdown(
   }
 }
 
-export function updateDepositLimitModule(
+export function UpdatedDepositLimitModule(
   vaultAddress: Address,
   depositLimitModule: Address,
   transaction: Transaction
@@ -733,7 +731,7 @@ export function updateDepositLimitModule(
   }
 }
 
-export function updateWithdrawLimitModule(
+export function UpdatedWithdrawLimitModule(
   vaultAddress: Address,
   withdrawLimitModule: Address,
   transaction: Transaction
