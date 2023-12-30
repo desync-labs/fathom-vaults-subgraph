@@ -177,9 +177,9 @@ type VaultUpdate @entity {
   "The amount of time profits will unlock over."
   profitMaxUnlockTime: BigInt!
   "Total amount of assets that has been deposited in strategies."
-  totalDebtAmount: BigInt!
+  totalDebt: BigInt!
   "Current assets held in the vault contract. Replacing balanceOf(this) to avoid price_per_share manipulation."
-  totalIdleAmount: BigInt!
+  totalIdle: BigInt!
 }
 
 type Account @entity {
