@@ -62,7 +62,7 @@ const createNewVaultFromAddress = (
 
   // vault fields
   vaultEntity.activation = transaction.timestamp;
-  vaultEntity.apiVersion = vaultContract.API_VERSION();
+  vaultEntity.apiVersion = vaultContract.apiVersion();
   vaultEntity.activationBlockNumber = transaction.blockNumber;
 
   vaultEntity.accountant = vaultContract.accountant();
