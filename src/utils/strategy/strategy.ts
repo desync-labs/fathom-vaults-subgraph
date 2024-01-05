@@ -257,8 +257,8 @@ export function updateDebtPurchased(
   }
 
   strategy.currentDebt = strategy.currentDebt.minus(amount);
-  vault.totalDebtAmount = vault.totalDebtAmount.minus(amount);
-  vault.totalIdleAmount = vault.totalIdleAmount.plus(amount);
+  vault.totalDebt = vault.totalDebt.minus(amount);
+  vault.totalIdle = vault.totalIdle.plus(amount);
   strategy.save();
   vault.save();
 }

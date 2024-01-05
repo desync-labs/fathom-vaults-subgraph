@@ -51,13 +51,12 @@ function createVaultUpdate(
   newProtocolFee: BigInt | null,
   depositLimit: BigInt,
   accountant: Bytes,
-  roleManager: Bytes,
   depositLimitModule: Bytes,
   withdrawLimitModule: Bytes,
   minimumTotalIdle: BigInt,
   profitMaxUnlockTime: BigInt,
-  totalDebtAmount: BigInt,
-  totalIdleAmount: BigInt,
+  totalDebt: BigInt,
+  totalIdle: BigInt,
   shutdown: boolean
 ): VaultUpdate {
   log.debug('[VaultUpdate] Creating vault update with id {}', [id]);
@@ -81,7 +80,6 @@ function createVaultUpdate(
   vaultUpdate.balancePosition = balancePosition;
   vaultUpdate.returnsGenerated = returnsGenerated;
   vaultUpdate.accountant = accountant;
-  vaultUpdate.roleManager = roleManager;
   vaultUpdate.depositLimitModule = depositLimitModule;
   vaultUpdate.withdrawLimitModule = withdrawLimitModule;
 
@@ -89,8 +87,8 @@ function createVaultUpdate(
   vaultUpdate.blockNumber = blockNumber;
   vaultUpdate.minimumTotalIdle = minimumTotalIdle;
   vaultUpdate.profitMaxUnlockTime = profitMaxUnlockTime;
-  vaultUpdate.totalDebtAmount = totalDebtAmount;
-  vaultUpdate.totalIdleAmount = totalIdleAmount;
+  vaultUpdate.totalDebt = totalDebt;
+  vaultUpdate.totalIdle = totalIdle;
   vaultUpdate.shutdown = shutdown;
   vaultUpdate.save();
 
@@ -189,13 +187,12 @@ export function firstDeposit(
       null, // newProtocolFee
       vault.depositLimit,
       vault.accountant,
-      vault.roleManager,
       vault.depositLimitModule,
       vault.withdrawLimitModule,
       vault.minimumTotalIdle,
       vault.profitMaxUnlockTime,
-      vault.totalDebtAmount,
-      vault.totalIdleAmount,
+      vault.totalDebt,
+      vault.totalIdle,
       vault.shutdown
     );
   }
@@ -235,13 +232,12 @@ export function deposit(
       null, // newProtocolFee
       vault.depositLimit,
       vault.accountant,
-      vault.roleManager,
       vault.depositLimitModule,
       vault.withdrawLimitModule,
       vault.minimumTotalIdle,
       vault.profitMaxUnlockTime,
-      vault.totalDebtAmount,
-      vault.totalIdleAmount,
+      vault.totalDebt,
+      vault.totalIdle,
       vault.shutdown
     );
   }
@@ -277,13 +273,12 @@ export function withdraw(
     null, // newProtocolFee
     vault.depositLimit,
     vault.accountant,
-    vault.roleManager,
     vault.depositLimitModule,
     vault.withdrawLimitModule,
     vault.minimumTotalIdle,
     vault.profitMaxUnlockTime,
-    vault.totalDebtAmount,
-    vault.totalIdleAmount,
+    vault.totalDebt,
+    vault.totalIdle,
     vault.shutdown
   );
   return newVaultUpdate;
@@ -325,13 +320,12 @@ export function strategyReported(
     null,
     vault.depositLimit,
     vault.accountant,
-    vault.roleManager,
     vault.depositLimitModule,
     vault.withdrawLimitModule,
     vault.minimumTotalIdle,
     vault.profitMaxUnlockTime,
-    vault.totalDebtAmount,
-    vault.totalIdleAmount,
+    vault.totalDebt,
+    vault.totalIdle,
     vault.shutdown
   );
   return newVaultUpdate;

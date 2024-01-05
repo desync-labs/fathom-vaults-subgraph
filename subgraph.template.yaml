@@ -35,10 +35,6 @@ dataSources:
         - name: VaultPackage
           file: ./abis/VaultPackage.json
       eventHandlers:
-        - event: RoleSet(indexed address,bytes32)
-          handler: handleRoleSet
-        - event: UpdatedRoleManager(address)
-          handler: handleUpdatedRoleManager
         - event: DebtPurchased(indexed address,uint256)
           handler: handleDebtPurchased
         - event: StrategyChanged(indexed address,uint8)
@@ -108,10 +104,6 @@ templates:
       eventHandlers:
         - event: DebtUpdated(indexed address,uint256,uint256)
           handler: handleDebtUpdated
-        - event: RoleSet(indexed address,bytes32)
-          handler: handleRoleSet
-        - event: UpdatedRoleManager(address)
-          handler: handleUpdatedRoleManager
         - event: UpdatedAccountant(address)
           handler: handleUpdatedAccountant
         - event: UpdatedDefaultQueue(address[])

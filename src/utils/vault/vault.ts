@@ -50,8 +50,8 @@ const createNewVaultFromAddress = (
   vaultEntity.balanceTokensIdle = BIGINT_ZERO;
   vaultEntity.minimumTotalIdle = BIGINT_ZERO;
   vaultEntity.profitMaxUnlockTime = BIGINT_ZERO;
-  vaultEntity.totalDebtAmount = BIGINT_ZERO;
-  vaultEntity.totalIdleAmount = BIGINT_ZERO;
+  vaultEntity.totalDebt = BIGINT_ZERO;
+  vaultEntity.totalIdle = BIGINT_ZERO;
   vaultEntity.totalFees = BIGINT_ZERO;
   vaultEntity.totalRefunds = BIGINT_ZERO;
   vaultEntity.protocolFees = BIGINT_ZERO;
@@ -66,7 +66,6 @@ const createNewVaultFromAddress = (
   vaultEntity.activationBlockNumber = transaction.blockNumber;
 
   vaultEntity.accountant = vaultContract.accountant();
-  vaultEntity.roleManager = vaultContract.roleManager();
   vaultEntity.depositLimitModule = vaultContract.depositLimitModule();
   vaultEntity.withdrawLimitModule = vaultContract.withdrawLimitModule();
   let tryDepositLimit = vaultContract.try_depositLimit();
@@ -273,22 +272,6 @@ export function withdraw(
       );
     }
   } else {
-    /*
-      This case should not exist because it means an user already has share tokens without having deposited before.
-      BUT due to some vaults were deployed, and registered in the registry after several blocks, there are cases were some users deposited tokens before the vault were registered (in the registry).
-      Example:
-        Account:  0x557cde75c38b2962be3ca94dced614da774c95b0
-        Vault:    0xbfa4d8aa6d8a379abfe7793399d3ddacc5bbecbb
-
-        Vault registered at tx (block 11579536): https://etherscan.io/tx/0x6b51f1f743ec7a42db6ba1995e4ade2ba0e5b8f1fec03d3dd599a90da66d6f69
-
-        Account transfers:
-        https://etherscan.io/token/0xbfa4d8aa6d8a379abfe7793399d3ddacc5bbecbb?a=0x557cde75c38b2962be3ca94dced614da774c95b0
-
-        The first two deposits were at blocks 11557079 and 11553285. In both cases, some blocks after registering the vault.
-
-        As TheGraph doesn't support to process blocks before the vault was registered (using the template feature), these cases are treated as special cases (pending to fix).
-    */
     log.warning(
       '[Vault] AccountVaultPosition for vault {} did not exist when withdrawl was executed. Missing position id: {}',
       [vaultAddress.toHexString(), accountVaultPositionId]
@@ -518,37 +501,6 @@ function getBalancePosition(vaultContract: VaultPackage, sharesManager: Address)
   // @ts-ignore
   let decimals = u8(vaultContract.decimals());
   return totalAssets.times(pricePerShare).div(BigInt.fromI32(10).pow(decimals));
-}
-
-export function UpdatedRoleManager(
-  vaultAddress: Address,
-  roleManager: Address,
-  transaction: Transaction
-): void {
-  let vault = Vault.load(vaultAddress.toHexString());
-  if (vault === null) {
-    log.warning(
-      'Failed to update vault role manager, vault does not exist. Vault address: {} role manager address: {}  Txn hash: {}',
-      [
-        vaultAddress.toHexString(),
-        roleManager.toHexString(),
-        transaction.hash.toHexString(),
-      ]
-    );
-    return;
-  } else {
-    log.info(
-      'Vault role manager updated. Vault address: {}, To: {}, on Txn hash: {}',
-      [
-        vaultAddress.toHexString(),
-        roleManager.toString(),
-        transaction.hash.toHexString(),
-      ]
-    );
-
-    vault.roleManager = roleManager;
-    vault.save();
-  }
 }
 
 export function UpdatedAccountant(

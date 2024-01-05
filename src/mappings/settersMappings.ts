@@ -24,7 +24,7 @@ export function handleUpdatedAccountant(event: UpdatedAccountant): void {
     'UpdatedAccountant'
   );
 
-  vaultLibrary.UpdatedRoleManager(
+  vaultLibrary.UpdatedAccountant(
     FATHOM_VAULT_ADDRESS,
     event.params.accountant,
     ethTransaction
