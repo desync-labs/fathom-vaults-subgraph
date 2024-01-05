@@ -8,7 +8,7 @@ dataSources:
     name: FathomVault
     network: mainnet
     source:
-      abi: FathomVault
+      abi: VaultPackage
       address: "{{FathomVault}}"
       startBlock: {{blockNumber}}
     mapping:
@@ -32,40 +32,11 @@ dataSources:
         - StrategyReportResult
         - VaultDayData
       abis:
-        - name: FathomVault
-          file: ./abis/FathomVault.json
+        - name: VaultPackage
+          file: ./abis/VaultPackage.json
       eventHandlers:
-        - event: RoleSet(indexed address,bytes32)
-          handler: handleRoleSet
-        - event: UpdateRoleManager(indexed address)
-          handler: handleUpdateRoleManager
         - event: DebtPurchased(indexed address,uint256)
           handler: handleDebtPurchased
-  - kind: ethereum/contract
-    name: StrategyManager
-    network: mainnet
-    source:
-      abi: StrategyManager
-      address: "{{StrategyManager}}" # Replace with the actual address variable
-      startBlock: {{blockNumber}} # Replace with the appropriate start block
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.3
-      language: wasm/assemblyscript
-      file: ./src/mappings/strategyManagerMappings.ts
-      entities:
-        - Strategy
-        - StrategyReport
-        - StrategyReportResult
-        - Transaction
-      abis:
-        - name: StrategyManager
-          file: ./abis/StrategyManager.json
-        - name: FathomVault
-          file: ./abis/FathomVault.json
-        - name: SharesManager
-          file: ./abis/SharesManager.json
-      eventHandlers:
         - event: StrategyChanged(indexed address,uint8)
           handler: handleStrategyChanged
         - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256)
@@ -74,115 +45,39 @@ dataSources:
           handler: handleUpdatedMaxDebtForStrategy
         - event: DebtUpdated(indexed address,uint256,uint256)
           handler: handleDebtUpdated
-        - event: UpdatedFees(indexed uint256,indexed uint256,indexed uint256,address)
+        - event: UpdatedFees(uint256,uint256,uint256,address)
           handler: handleUpdatedFees
-  - kind: ethereum/contract
-    name: SharesManager
-    network: mainnet
-    source:
-      abi: SharesManager
-      address: "{{SharesManager}}" # Replace with the actual address variable
-      startBlock: {{blockNumber}} # Replace with the appropriate start block
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.3
-      language: wasm/assemblyscript
-      file: ./src/mappings/sharesManagerMappings.ts
-      entities:
-        - Strategy
-        - Transaction
-        - Vault
-      abis:
-        - name: SharesManager
-          file: ./abis/SharesManager.json
-        - name: FathomVault
-          file: ./abis/FathomVault.json
-      eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
         - event: Deposit(indexed address,indexed address,uint256,uint256)
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
-        - event: DebtUpdated(indexed address,uint256,uint256)
-          handler: handleDebtUpdated
-        - event: UpdateDepositLimit(uint256)
-          handler: handleUpdateDepositLimit
-  - kind: ethereum/contract
-    name: Governance
-    network: mainnet
-    source:
-      abi: Governance
-      address: "{{Governance}}" # Replace with the actual address variable
-      startBlock: {{blockNumber}} # Replace with the appropriate start block
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.3
-      language: wasm/assemblyscript
-      file: ./src/mappings/governanceMappings.ts
-      entities:
-        - Transaction
-        - Vault
-      abis:
-        - name: Governance
-          file: ./abis/Governance.json
-        - name: FathomVault
-          file: ./abis/FathomVault.json
-      eventHandlers:
-        - event: DebtPurchased(indexed address,uint256)
-          handler: handleDebtPurchased
+        - event: UpdatedDepositLimit(uint256)
+          handler: handleUpdatedDepositLimit
         - event: Shutdown()
           handler: handleShutdown
-        - event: UpdateDepositLimitModule(indexed address)
-          handler: handleUpdateDepositLimitModule
-        - event: DebtUpdated(indexed address,uint256,uint256)
-          handler: handleDebtUpdated
-        - event: UpdateDepositLimit(uint256)
-          handler: handleUpdateDepositLimit
-  - kind: ethereum/contract
-    name: Setters
-    network: mainnet
-    source:
-      abi: Setters
-      address: "{{Setters}}" # Replace with the actual address variable
-      startBlock: {{blockNumber}} # Replace with the appropriate start block
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.3
-      language: wasm/assemblyscript
-      file: ./src/mappings/settersMappings.ts
-      entities:
-        - Transaction
-        - Vault
-      abis:
-        - name: Setters
-          file: ./abis/Setters.json
-        - name: FathomVault
-          file: ./abis/FathomVault.json
-      eventHandlers:
-        - event: UpdateAccountant(indexed address)
-          handler: handleUpdateAccountant
-        - event: UpdateDefaultQueue(address[])
-          handler: handleUpdateDefaultQueue
-        - event: UpdateUseDefaultQueue(bool)
-          handler: handleUpdateUseDefaultQueue
-        - event: UpdateDepositLimit(uint256)
-          handler: handleUpdateDepositLimit
-        - event: UpdateDepositLimitModule(indexed address)
-          handler: handleUpdateDepositLimitModule
-        - event: UpdateWithdrawLimitModule(indexed address)
-          handler: handleUpdateWithdrawLimitModule
-        - event: UpdateMinimumTotalIdle(uint256)
-          handler: handleUpdateMinimumTotalIdle
-        - event: UpdateProfitMaxUnlockTime(uint256)
-          handler: handleUpdateProfitMaxUnlockTime
+        - event: UpdatedDepositLimitModule(address)
+          handler: handleUpdatedDepositLimitModule
+        - event: UpdatedAccountant(address)
+          handler: handleUpdatedAccountant
+        - event: UpdatedDefaultQueue(address[])
+          handler: handleUpdatedDefaultQueue
+        - event: UpdatedUseDefaultQueue(bool)
+          handler: handleUpdatedUseDefaultQueue
+        - event: UpdatedWithdrawLimitModule(address)
+          handler: handleUpdatedWithdrawLimitModule
+        - event: UpdatedMinimumTotalIdle(uint256)
+          handler: handleUpdatedMinimumTotalIdle
+        - event: UpdatedProfitMaxUnlockTime(uint256)
+          handler: handleUpdatedProfitMaxUnlockTime
 
 templates:
   - kind: ethereum/contract
     name: FathomVault
     network: mainnet
     source:
-      abi: FathomVault
+      abi: VaultPackage
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.3
@@ -204,34 +99,30 @@ templates:
         - StrategyReportResult
         - VaultDayData
       abis:
-        - name: FathomVault
-          file: ./abis/FathomVault.json
+        - name: VaultPackage
+          file: ./abis/VaultPackage.json
       eventHandlers:
         - event: DebtUpdated(indexed address,uint256,uint256)
           handler: handleDebtUpdated
-        - event: RoleSet(indexed address,bytes32)
-          handler: handleRoleSet
-        - event: UpdateRoleManager(indexed address)
-          handler: handleUpdateRoleManager
-        - event: UpdateAccountant(indexed address)
-          handler: handleUpdateAccountant
-        - event: UpdateDefaultQueue(address[])
-          handler: handleUpdateDefaultQueue
-        - event: UpdateUseDefaultQueue(bool)
-          handler: handleUpdateUseDefaultQueue
+        - event: UpdatedAccountant(address)
+          handler: handleUpdatedAccountant
+        - event: UpdatedDefaultQueue(address[])
+          handler: handleUpdatedDefaultQueue
+        - event: UpdatedUseDefaultQueue(bool)
+          handler: handleUpdatedUseDefaultQueue
         - event: UpdatedMaxDebtForStrategy(indexed address,indexed address,uint256)
           handler: handleUpdatedMaxDebtForStrategy
-        - event: UpdateDepositLimit(uint256)
-          handler: handleUpdateDepositLimit
-        - event: UpdateMinimumTotalIdle(uint256)
-          handler: handleUpdateMinimumTotalIdle
-        - event: UpdateProfitMaxUnlockTime(uint256)
-          handler: handleUpdateProfitMaxUnlockTime
+        - event: UpdatedDepositLimit(uint256)
+          handler: handleUpdatedDepositLimit
+        - event: UpdatedMinimumTotalIdle(uint256)
+          handler: handleUpdatedMinimumTotalIdle
+        - event: UpdatedProfitMaxUnlockTime(uint256)
+          handler: handleUpdatedProfitMaxUnlockTime
         - event: DebtPurchased(indexed address,uint256)
           handler: handleDebtPurchased
         - event: Shutdown()
           handler: handleShutdown
-        - event: UpdateDepositLimitModule(indexed address)
-          handler: handleUpdateDepositLimitModule
-        - event: UpdateWithdrawLimitModule(indexed address)
-          handler: handleUpdateWithdrawLimitModule
+        - event: UpdatedDepositLimitModule(address)
+          handler: handleUpdatedDepositLimitModule
+        - event: UpdatedWithdrawLimitModule(address)
+          handler: handleUpdatedWithdrawLimitModule

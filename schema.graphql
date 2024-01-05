@@ -94,8 +94,6 @@ type Vault @entity {
   apiVersion: String!
   "The address authorized for the Contract that charges fees and can give refunds."
   accountant: Bytes!
-  "The management address of the Vault to assert privileged functions that can only be called by management"
-  roleManager: Bytes!
   "Contract to control the deposit limit."
   depositLimitModule: Bytes!
   "Contract to control the withdraw limit."
@@ -111,9 +109,9 @@ type Vault @entity {
   "The amount of time profits will unlock over."
   profitMaxUnlockTime: BigInt!
   "Total amount of assets that has been deposited in strategies."
-  totalDebtAmount: BigInt!
+  totalDebt: BigInt!
   "Current assets held in the vault contract. Replacing balanceOf(this) to avoid price_per_share manipulation."
-  totalIdleAmount: BigInt!
+  totalIdle: BigInt!
   "Total fees in percentage"
   totalFees: BigInt!
   "Total refunds in percentage"
@@ -164,8 +162,6 @@ type VaultUpdate @entity {
   ### MANAGEMENT
   "The address authorized for the Contract that charges fees and can give refunds."
   accountant: Bytes!
-  "The management address of the Vault to assert privileged functions that can only be called by management"
-  roleManager: Bytes!
   "Contract to control the deposit limit."
   depositLimitModule: Bytes!
   "Contract to control the withdraw limit."
@@ -177,9 +173,9 @@ type VaultUpdate @entity {
   "The amount of time profits will unlock over."
   profitMaxUnlockTime: BigInt!
   "Total amount of assets that has been deposited in strategies."
-  totalDebtAmount: BigInt!
+  totalDebt: BigInt!
   "Current assets held in the vault contract. Replacing balanceOf(this) to avoid price_per_share manipulation."
-  totalIdleAmount: BigInt!
+  totalIdle: BigInt!
 }
 
 type Account @entity {
@@ -195,8 +191,6 @@ type Account @entity {
   sharesReceived: [Transfer!]! @derivedFrom(field: "to")
   "Outgoing share transfers"
   sharesSent: [Transfer!]! @derivedFrom(field: "from")
-  "Role"
-  role: Bytes
 }
 
 type Deposit @entity {

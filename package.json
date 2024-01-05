@@ -1,8 +1,8 @@
 {
-  "name": "fathomswap-v2-subgraph",
+  "name": "fathom-vaults-subgraph",
   "version": "1.0.0",
-  "repository": "https://github.com/graphprotocol/fathomswap-v2-subgraph",
-  "license": "GPL-3.0-or-later",
+  "repository": "https://github.com/into-the-fathom/fathom-vaults-subgraph",
+  "license": "AGPL 3.0",
   "scripts": {
     "clean": "rm -rf build/ generated/ config/addresses.ts config/generatedAddresses.json subgraph.yaml",
     "codegen": "graph codegen",

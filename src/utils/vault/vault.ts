@@ -8,12 +8,11 @@ import {
   Vault,
   VaultUpdate,
 } from '../../../generated/schema';
-import { FathomVault } from '../../../generated/FathomVault/FathomVault';
+import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
 import { FathomVault as VaultTemplate } from '../../../generated/templates';
 import {
   BIGINT_ZERO,
   DO_CREATE_VAULT_TEMPLATE,
-  REGISTRY_V3_VAULT_TYPE_LEGACY,
   ZERO_ADDRESS,
 } from '../constants';
 import { getOrCreateToken } from '../token';
@@ -26,7 +25,6 @@ import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
 import { updateVaultDayData } from './vault-day-data';
 import { booleanToString, removeElementFromArray } from '../commons';
-import { SharesManager } from '../../../generated/SharesManager/SharesManager';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -39,7 +37,7 @@ const createNewVaultFromAddress = (
 ): Vault => {
   let id = vaultAddress.toHexString();
   let vaultEntity = new Vault(id);
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let token = getOrCreateToken(vaultContract.asset());
   let shareToken = getOrCreateToken(sharesManagerAddress);
   vaultEntity.transaction = transaction.id;
@@ -52,8 +50,8 @@ const createNewVaultFromAddress = (
   vaultEntity.balanceTokensIdle = BIGINT_ZERO;
   vaultEntity.minimumTotalIdle = BIGINT_ZERO;
   vaultEntity.profitMaxUnlockTime = BIGINT_ZERO;
-  vaultEntity.totalDebtAmount = BIGINT_ZERO;
-  vaultEntity.totalIdleAmount = BIGINT_ZERO;
+  vaultEntity.totalDebt = BIGINT_ZERO;
+  vaultEntity.totalIdle = BIGINT_ZERO;
   vaultEntity.totalFees = BIGINT_ZERO;
   vaultEntity.totalRefunds = BIGINT_ZERO;
   vaultEntity.protocolFees = BIGINT_ZERO;
@@ -64,11 +62,10 @@ const createNewVaultFromAddress = (
 
   // vault fields
   vaultEntity.activation = transaction.timestamp;
-  vaultEntity.apiVersion = vaultContract.API_VERSION();
+  vaultEntity.apiVersion = vaultContract.apiVersion();
   vaultEntity.activationBlockNumber = transaction.blockNumber;
 
   vaultEntity.accountant = vaultContract.accountant();
-  vaultEntity.roleManager = vaultContract.roleManager();
   vaultEntity.depositLimitModule = vaultContract.depositLimitModule();
   vaultEntity.withdrawLimitModule = vaultContract.withdrawLimitModule();
   let tryDepositLimit = vaultContract.try_depositLimit();
@@ -140,7 +137,7 @@ export function deposit(
       sharesMinted.toString(),
     ]
   );
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(receiver);
   let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
 
@@ -196,7 +193,7 @@ export function calculateAmountDeposited(
   sharesManagerAddress: Address,
   sharesMinted: BigInt
 ): BigInt {
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let totalAssets = getTotalAssets(sharesManagerAddress);
   let totalSupply = vaultContract.totalSupply();
   let amount = totalSupply.isZero()
@@ -230,7 +227,7 @@ export function withdraw(
   timestamp: BigInt,
   blockNumber: BigInt
 ): void {
-  let vaultContract = FathomVault.bind(vaultAddress);
+  let vaultContract = VaultPackage.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(from);
   let balancePosition = getBalancePosition(vaultContract, sharesManagerAddress);
   let vault = getOrCreate(vaultAddress, sharesManagerAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
@@ -275,22 +272,6 @@ export function withdraw(
       );
     }
   } else {
-    /*
-      This case should not exist because it means an user already has share tokens without having deposited before.
-      BUT due to some vaults were deployed, and registered in the registry after several blocks, there are cases were some users deposited tokens before the vault were registered (in the registry).
-      Example:
-        Account:  0x557cde75c38b2962be3ca94dced614da774c95b0
-        Vault:    0xbfa4d8aa6d8a379abfe7793399d3ddacc5bbecbb
-
-        Vault registered at tx (block 11579536): https://etherscan.io/tx/0x6b51f1f743ec7a42db6ba1995e4ade2ba0e5b8f1fec03d3dd599a90da66d6f69
-
-        Account transfers:
-        https://etherscan.io/token/0xbfa4d8aa6d8a379abfe7793399d3ddacc5bbecbb?a=0x557cde75c38b2962be3ca94dced614da774c95b0
-
-        The first two deposits were at blocks 11557079 and 11553285. In both cases, some blocks after registering the vault.
-
-        As TheGraph doesn't support to process blocks before the vault was registered (using the template feature), these cases are treated as special cases (pending to fix).
-    */
     log.warning(
       '[Vault] AccountVaultPosition for vault {} did not exist when withdrawl was executed. Missing position id: {}',
       [vaultAddress.toHexString(), accountVaultPositionId]
@@ -345,7 +326,7 @@ export function withdraw(
 }
 
 export function transfer(
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   sharesManagerAddress: Address,
   from: Address,
   to: Address,
@@ -386,7 +367,7 @@ export function transfer(
 export function strategyReported(
   transaction: Transaction,
   strategyReport: StrategyReport,
-  vaultContract: FathomVault,
+  vaultContract: VaultPackage,
   vaultAddress: Address,
   SHARES_MANAGER_ADDRESS: Address,
   timestamp: BigInt,
@@ -420,7 +401,7 @@ export function strategyReported(
   );
 }
 
-export function UpdateDefaultQueue(
+export function UpdatedDefaultQueue(
   newQueue: Address[],
   ethTransaction: Transaction,
   event: ethereum.Event
@@ -463,7 +444,7 @@ export function UpdateDefaultQueue(
     }
 }
 
-export function UpdateUseDefaultQueue(
+export function UpdatedUseDefaultQueue(
     useDefaultQueue: boolean,
     ethTransaction: Transaction,
     event: ethereum.Event
@@ -478,7 +459,7 @@ export function UpdateUseDefaultQueue(
   }
 
 export function getTotalAssets(sharesManager: Address): BigInt {
-  let sharesManagerContract = SharesManager.bind(sharesManager);
+  let sharesManagerContract = VaultPackage.bind(sharesManager);
   let tryTotalAssets = sharesManagerContract.try_totalAssets();
   // TODO Debugging Use totalAssets directly
   let totalAssets = tryTotalAssets.reverted
@@ -487,8 +468,8 @@ export function getTotalAssets(sharesManager: Address): BigInt {
   return totalAssets;
 }
 
-function getBalancePosition(vaultContract: FathomVault, sharesManager: Address): BigInt {
-  let sharesManagerContract = SharesManager.bind(sharesManager);
+function getBalancePosition(vaultContract: VaultPackage, sharesManager: Address): BigInt {
+  let sharesManagerContract = VaultPackage.bind(sharesManager);
   let tryTotalAssets = sharesManagerContract.try_totalAssets();
   // TODO Debugging Use totalAssets directly
   let totalAssets = tryTotalAssets.reverted
@@ -522,38 +503,7 @@ function getBalancePosition(vaultContract: FathomVault, sharesManager: Address):
   return totalAssets.times(pricePerShare).div(BigInt.fromI32(10).pow(decimals));
 }
 
-export function updateRoleManager(
-  vaultAddress: Address,
-  roleManager: Address,
-  transaction: Transaction
-): void {
-  let vault = Vault.load(vaultAddress.toHexString());
-  if (vault === null) {
-    log.warning(
-      'Failed to update vault role manager, vault does not exist. Vault address: {} role manager address: {}  Txn hash: {}',
-      [
-        vaultAddress.toHexString(),
-        roleManager.toHexString(),
-        transaction.hash.toHexString(),
-      ]
-    );
-    return;
-  } else {
-    log.info(
-      'Vault role manager updated. Vault address: {}, To: {}, on Txn hash: {}',
-      [
-        vaultAddress.toHexString(),
-        roleManager.toString(),
-        transaction.hash.toHexString(),
-      ]
-    );
-
-    vault.roleManager = roleManager;
-    vault.save();
-  }
-}
-
-export function updateAccountant(
+export function UpdatedAccountant(
   vaultAddress: Address,
   accountantAddress: Address,
   transaction: Transaction
@@ -581,7 +531,7 @@ export function updateAccountant(
   }
 }
 
-export function updateDepositLimit(
+export function UpdatedDepositLimit(
   vaultAddress: Address,
   depositLimit: BigInt,
   transaction: Transaction
@@ -612,7 +562,7 @@ export function updateDepositLimit(
   }
 }
 
-export function updateMinimumTotalIdle(
+export function UpdatedMinimumTotalIdle(
   vaultAddress: Address,
   minimumTotalIdle: BigInt,
   transaction: Transaction
@@ -643,7 +593,7 @@ export function updateMinimumTotalIdle(
   }
 }
 
-export function updateProfitMaxUnlockTime(
+export function UpdatedProfitMaxUnlockTime(
   vaultAddress: Address,
   profitMaxUnlockTime: BigInt,
   transaction: Transaction
@@ -702,7 +652,7 @@ export function shutdown(
   }
 }
 
-export function updateDepositLimitModule(
+export function UpdatedDepositLimitModule(
   vaultAddress: Address,
   depositLimitModule: Address,
   transaction: Transaction
@@ -733,7 +683,7 @@ export function updateDepositLimitModule(
   }
 }
 
-export function updateWithdrawLimitModule(
+export function UpdatedWithdrawLimitModule(
   vaultAddress: Address,
   withdrawLimitModule: Address,
   transaction: Transaction

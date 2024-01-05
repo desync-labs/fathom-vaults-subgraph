@@ -1,8 +1,11 @@
+*.DS_Store
+.vscode
 node_modules/
-build/
-src/types/
-.DS_STORE
-yarn-error.log
+build
+generated
 config/addresses.ts
 config/generatedAddresses.json
 subgraph.yaml
+yarn.lock
+yarn-error.log
+package-lock.json

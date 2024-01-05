@@ -14,11 +14,3 @@ export function getOrCreate(address: Address): Account {
 
   return account as Account;
 }
-
-export function setRole(address: Address, role: Bytes): void {
-    log.debug('[Account] Set role', []);
-    let account = getOrCreate(address);
-
-    account.role = role;
-    account.save();
-  }

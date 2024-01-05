@@ -5,7 +5,7 @@ import {
   Transaction,
   Vault,
 } from '../../../generated/schema';
-import { FathomVault } from '../../../generated/FathomVault/FathomVault';
+import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
 import { booleanToString, getTimeInMillis } from '../commons';
 import { BIGINT_ZERO } from '../constants';
 import * as strategyReportLibrary from './strategy-report';
@@ -257,8 +257,8 @@ export function updateDebtPurchased(
   }
 
   strategy.currentDebt = strategy.currentDebt.minus(amount);
-  vault.totalDebtAmount = vault.totalDebtAmount.minus(amount);
-  vault.totalIdleAmount = vault.totalIdleAmount.plus(amount);
+  vault.totalDebt = vault.totalDebt.minus(amount);
+  vault.totalIdle = vault.totalIdle.plus(amount);
   strategy.save();
   vault.save();
 }
