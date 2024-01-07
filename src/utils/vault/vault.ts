@@ -396,7 +396,7 @@ export function updateDefaultQueue(
     log.info('Update vault default queue {} at tx {}', [newQueue.toString(), txHash]);
     let vault = Vault.load(event.address.toHexString());
     if (vault != null) {
-        const oldWithdrawlQueue = vault.defaultQueue;
+        let oldWithdrawlQueue = vault.defaultQueue;
         //Before we can set the new queue we need to remove all previous strats
         for (let i = 0; i < oldWithdrawlQueue.length; i++) {
         let currentStrategyAddress = oldWithdrawlQueue[i];
