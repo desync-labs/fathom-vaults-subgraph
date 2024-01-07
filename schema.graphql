@@ -112,14 +112,6 @@ type Vault @entity {
   totalDebt: BigInt!
   "Current assets held in the vault contract. Replacing balanceOf(this) to avoid price_per_share manipulation."
   totalIdle: BigInt!
-  "Total fees in percentage"
-  totalFees: BigInt!
-  "Total refunds in percentage"
-  totalRefunds: BigInt!
-  "Fees in percentage that go to the protocol"
-  protocolFees: BigInt!
-  "Address that receives the protocol fees"
-  protocolFeeRecipient: Bytes!
 }
 
 type VaultUpdate @entity {

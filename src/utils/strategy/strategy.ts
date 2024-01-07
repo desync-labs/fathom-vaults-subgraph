@@ -112,12 +112,12 @@ export function createReport(
           latestReport
         );
       }
-      } else {
-        log.info(
-          '[Strategy] Report result NOT created. Only one report created {} for strategy {}. TxHash: {}',
-          [latestReport.id, strategyId, txHash]
-        );
-      }
+    } else {
+      log.info(
+        '[Strategy] Report result NOT created. Only one report created {} for strategy {}. TxHash: {}',
+        [latestReport.id, strategyId, txHash]
+      );
+    }
     return latestReport;
   } else {
     log.warning(
@@ -173,48 +173,48 @@ export function updateDebt(
 }
 
 export function updateMaxDebt(
-    vaultAddress: Address,
-    strategyAddress: Address,
-    newDebt: BigInt,
-    transaction: Transaction
-  ): void {
-    let strategyId = buildId(strategyAddress);
-    let txHash = transaction.hash.toHexString();
-    log.info(
-      '[Strategy Mapping] Update Max Debt for strategy {} tx {}',
+  vaultAddress: Address,
+  strategyAddress: Address,
+  newDebt: BigInt,
+  transaction: Transaction
+): void {
+  let strategyId = buildId(strategyAddress);
+  let txHash = transaction.hash.toHexString();
+  log.info(
+    '[Strategy Mapping] Update Max Debt for strategy {} tx {}',
+    [strategyId, txHash]
+  );
+
+  let vaultId = vaultAddress.toHexString();
+  let vault = Vault.load(vaultId);
+  if (!vault) {
+    log.critical(
+      '[Strategy Mapping] Vault entity does not exist: {} updateMaxDebt tx {}',
+      [vaultId, txHash]
+    );
+    return;
+  }
+
+  let strategy = Strategy.load(strategyId);
+  if (!strategy) {
+    log.critical(
+      '[Strategy Mapping] Strategy entity does not exist: {} updateMaxDebt tx {}',
       [strategyId, txHash]
     );
-  
-    let vaultId = vaultAddress.toHexString();
-    let vault = Vault.load(vaultId);
-    if (!vault) {
-      log.critical(
-        '[Strategy Mapping] Vault entity does not exist: {} updateMaxDebt tx {}',
-        [vaultId, txHash]
-      );
-      return;
-    }
-  
-    let strategy = Strategy.load(strategyId);
-    if (!strategy) {
-      log.critical(
-        '[Strategy Mapping] Strategy entity does not exist: {} updateMaxDebt tx {}',
-        [strategyId, txHash]
-      );
-      return;
-    }
-  
-    if (strategy.vault != vaultId) {
-      log.critical(
-        '[Strategy Mapping] Strategy entity {} is not linked to this vault: {} tx: {}',
-        [strategyId, vaultId, txHash]
-      );
-      return;
-    }
-  
-    strategy.maxDebt = newDebt;
-    strategy.save();
+    return;
   }
+
+  if (strategy.vault != vaultId) {
+    log.critical(
+      '[Strategy Mapping] Strategy entity {} is not linked to this vault: {} tx: {}',
+      [strategyId, vaultId, txHash]
+    );
+    return;
+  }
+
+  strategy.maxDebt = newDebt;
+  strategy.save();
+}
 
 export function updateDebtPurchased(
   vaultAddress: Address,

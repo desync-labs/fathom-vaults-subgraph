@@ -45,8 +45,6 @@ dataSources:
           handler: handleUpdatedMaxDebtForStrategy
         - event: DebtUpdated(indexed address,uint256,uint256)
           handler: handleDebtUpdated
-        - event: UpdatedFees(uint256,uint256,uint256,address)
-          handler: handleUpdatedFees
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
         - event: Deposit(indexed address,indexed address,uint256,uint256)
@@ -102,27 +100,37 @@ templates:
         - name: VaultPackage
           file: ./abis/VaultPackage.json
       eventHandlers:
+        - event: DebtPurchased(indexed address,uint256)
+          handler: handleDebtPurchased
+        - event: StrategyChanged(indexed address,uint8)
+          handler: handleStrategyChanged
+        - event: StrategyReported(indexed address,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleStrategyReported
+        - event: UpdatedMaxDebtForStrategy(indexed address,indexed address,uint256)
+          handler: handleUpdatedMaxDebtForStrategy
         - event: DebtUpdated(indexed address,uint256,uint256)
           handler: handleDebtUpdated
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: Deposit(indexed address,indexed address,uint256,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleWithdraw
+        - event: UpdatedDepositLimit(uint256)
+          handler: handleUpdatedDepositLimit
+        - event: Shutdown()
+          handler: handleShutdown
+        - event: UpdatedDepositLimitModule(address)
+          handler: handleUpdatedDepositLimitModule
         - event: UpdatedAccountant(address)
           handler: handleUpdatedAccountant
         - event: UpdatedDefaultQueue(address[])
           handler: handleUpdatedDefaultQueue
         - event: UpdatedUseDefaultQueue(bool)
           handler: handleUpdatedUseDefaultQueue
-        - event: UpdatedMaxDebtForStrategy(indexed address,indexed address,uint256)
-          handler: handleUpdatedMaxDebtForStrategy
-        - event: UpdatedDepositLimit(uint256)
-          handler: handleUpdatedDepositLimit
+        - event: UpdatedWithdrawLimitModule(address)
+          handler: handleUpdatedWithdrawLimitModule
         - event: UpdatedMinimumTotalIdle(uint256)
           handler: handleUpdatedMinimumTotalIdle
         - event: UpdatedProfitMaxUnlockTime(uint256)
           handler: handleUpdatedProfitMaxUnlockTime
-        - event: DebtPurchased(indexed address,uint256)
-          handler: handleDebtPurchased
-        - event: Shutdown()
-          handler: handleShutdown
-        - event: UpdatedDepositLimitModule(address)
-          handler: handleUpdatedDepositLimitModule
-        - event: UpdatedWithdrawLimitModule(address)
-          handler: handleUpdatedWithdrawLimitModule

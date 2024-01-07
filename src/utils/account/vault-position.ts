@@ -60,13 +60,11 @@ export function getOrCreate(
 
 export function getBalancePosition(
   account: Account,
-  vaultContract: VaultPackage,
-  sharesManager: Address
+  vaultContract: VaultPackage
 ): BigInt {
   log.info('[VaultPosition] GetBalancePosition account  {} ', [account.id]);
   let pricePerShare = vaultContract.pricePerShare();
-  let sharesManagerContract = VaultPackage.bind(sharesManager);
-  let decimals = sharesManagerContract.decimals();
+  let decimals = vaultContract.decimals();
   // (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -123,7 +121,6 @@ function getBalanceProfit(
 
 export function deposit(
   vaultContract: VaultPackage,
-  sharesManager: Address,
   account: Account,
   vault: Vault,
   transaction: Transaction,
@@ -139,7 +136,7 @@ export function deposit(
   // TODO Use tokenLibrary.getOrCreate
   let token = Token.load(vault.token) as Token;
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(account, vaultContract, sharesManager);
+  let balancePosition = getBalancePosition(account, vaultContract);
   if (accountVaultPosition == null) {
     log.info('Tx: {} Account vault position {} not found. Creating it.', [
       txHash,
@@ -198,7 +195,6 @@ export function deposit(
 
 export function withdraw(
   vaultContract: VaultPackage,
-  sharesManager: Address,
   accountVaultPosition: AccountVaultPosition,
   withdrawnAmount: BigInt,
   sharesBurnt: BigInt,
@@ -208,7 +204,7 @@ export function withdraw(
   let vault = Vault.load(accountVaultPosition.vault) as Vault;
   let token = Token.load(vault.token) as Token;
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(account, vaultContract, sharesManager);
+  let balancePosition = getBalancePosition(account, vaultContract);
   let newAccountVaultPositionOrder = vaultPositionUpdateLibrary.getNewOrder(
     accountVaultPosition.latestUpdate,
     transaction.hash.toHexString()
@@ -299,7 +295,6 @@ export function withdrawZero(
 
 export function transferForAccount(
   vaultContract: VaultPackage,
-  sharesManager: Address,
   account: Account,
   vault: Vault,
   receivingTransfer: boolean,
@@ -310,7 +305,7 @@ export function transferForAccount(
   let accountVaultPositionId = buildId(account, vault);
   let accountVaultPosition = AccountVaultPosition.load(accountVaultPositionId);
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(account, vaultContract, sharesManager);
+  let balancePosition = getBalancePosition(account, vaultContract);
   let latestUpdateId: string;
   let newAccountVaultPositionOrder: BigInt;
   if (accountVaultPosition == null) {
@@ -403,7 +398,6 @@ export function transferForAccount(
 
 export function transfer(
   vaultContract: VaultPackage,
-  sharesManager: Address,
   fromAccount: Account,
   toAccount: Account,
   vault: Vault,
@@ -420,7 +414,6 @@ export function transfer(
 
   transferForAccount(
     vaultContract,
-    sharesManager,
     fromAccount,
     vault,
     false,
@@ -431,7 +424,6 @@ export function transfer(
 
   transferForAccount(
     vaultContract,
-    sharesManager,
     toAccount,
     vault,
     true,
