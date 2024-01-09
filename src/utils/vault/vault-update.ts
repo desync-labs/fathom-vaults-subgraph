@@ -59,7 +59,7 @@ function createVaultUpdate(
   totalIdle: BigInt,
   shutdown: boolean
 ): VaultUpdate {
-  log.debug('[VaultUpdate] Creating vault update with id {}', [id]);
+  log.info('[VaultUpdate] Creating vault update with id {}', [id]);
 
   let vaultUpdate = constructVaultUpdateEntity(
     id,
@@ -94,10 +94,7 @@ function createVaultUpdate(
 
   vault.latestUpdate = vaultUpdate.id;
   vault.balanceTokens = vaultUpdate.currentBalanceTokens;
-  // todo: current implementation of balanceTokensIdle does not update when debt is issued to strategies
-  vault.balanceTokensIdle = vault.balanceTokensIdle
-    .plus(tokensDeposited)
-    .minus(tokensWithdrawn);
+  vault.balanceTokensIdle = vaultUpdate.totalIdle;
 
   vault.sharesSupply = vault.sharesSupply.plus(sharesMinted).minus(sharesBurnt);
 
