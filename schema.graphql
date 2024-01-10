@@ -421,3 +421,27 @@ type VaultDayData @entity {
   "Block number the day data aggregation occured on"
   blockNumber: BigInt!
 }
+
+type Accountant @entity {
+  id: ID!
+  "time in UTC"
+  timestamp: BigInt!
+  "The total fees in BPS"
+  performanceFee: BigInt!
+  "The recipient of the fees"
+  feeRecipient: Bytes!
+}
+
+type Factory @entity {
+  id: ID!
+  "time in UTC"
+  timestamp: BigInt!
+  "The amount of performance fees that goes to the protocol in BPS"
+  protocolFee: Int!
+  "The recipient of the fees"
+  feeRecipient: Bytes!
+  "The current Vault implementation"
+  vaultPackage: Bytes!
+  "List of all vaults created by this factory"
+  vaults: [Bytes!]!
+}

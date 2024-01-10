@@ -69,6 +69,55 @@ dataSources:
           handler: handleUpdatedMinimumTotalIdle
         - event: UpdatedProfitMaxUnlockTime(uint256)
           handler: handleUpdatedProfitMaxUnlockTime
+  - kind: ethereum/contract
+    name: Factory
+    network: mainnet
+    source:
+      abi: FactoryPackage
+      address: "{{Factory}}"
+      startBlock: {{blockNumber}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: ./src/mappings/factoryMappings.ts
+      entities:
+        - Transaction
+        - Vault
+        - Factory
+      abis:
+        - name: FactoryPackage
+          file: ./abis/FactoryPackage.json
+      eventHandlers:
+        - event: VaultPackageUpdated(indexed address)
+          handler: handleVaultPackageUpdated
+        - event: FeeConfigUpdated(indexed address,uint16)
+          handler: handleFeeConfigUpdated
+        - event: VaultDeployed(indexed address,uint32,indexed address,string,string,indexed address,address)
+          handler: handleVaultDeployed
+  - kind: ethereum/contract
+    name: Accountant
+    network: mainnet
+    source:
+      abi: GenericAccountant
+      address: "{{Accountant}}"
+      startBlock: {{blockNumber}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: ./src/mappings/accountantMappings.ts
+      entities:
+        - Transaction
+        - Accountant
+      abis:
+        - name: GenericAccountant
+          file: ./abis/GenericAccountant.json
+      eventHandlers:
+        - event: PerformanceFeeSet(uint256)
+          handler: handlePerformanceFeeSet
+        - event: FeeRecipientSet(address)
+          handler: handleFeeRecipientSet
 
 templates:
   - kind: ethereum/contract
