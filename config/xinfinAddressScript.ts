@@ -11,6 +11,8 @@ renameAddresses['xinfin'] = networkAddresses['50'][process.argv[2]]["addresses"]
 
 export let addresses: Addresses = {
   FathomVault: '{{xinfin.FathomVault}}',
+  Factory: '{{xinfin.Factory}}',
+  Accountant: '{{xinfin.Accountant}}',
   blockNumber: networkAddresses['50'][process.argv[2]]["blockNumber"],
   network:  networkAddresses['50']["network"],
 }

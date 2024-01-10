@@ -293,7 +293,8 @@ export function withdraw(
   if (vault.latestUpdate !== null) {
     let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate!);
     // This scenario where latestVaultUpdate === null shouldn't happen. One vault update should have created when user deposited the tokens.
-    if (latestVaultUpdate !== null) {
+    let vaultUpdateId = vaultUpdateLibrary.buildIdFromVaultAndTransaction(vault, transaction);    
+    if (latestVaultUpdate !== null && latestVaultUpdate.id != vaultUpdateId) {
       let vaultUpdate = vaultUpdateLibrary.withdraw(
         vault,
         withdrawnAmount,
@@ -306,7 +307,7 @@ export function withdraw(
       );
     }
   } else {
-    log.warning(
+    log.info(
       '[Vault] latestVaultUpdate is null and someone is calling withdraw(). Vault: {}',
       [vault.id.toString()]
     );
