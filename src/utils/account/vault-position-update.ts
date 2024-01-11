@@ -16,10 +16,11 @@ function incrementOrder(order: BigInt): BigInt {
 export function buildIdFromAccountVaultAndOrder(
   account: Account,
   vault: Vault,
+  hash: string,
   newOrder: BigInt
 ): string {
   return account.id.concat(
-    '-'.concat(vault.id.concat('-'.concat(newOrder.toString())))
+    '-'.concat(vault.id.concat('-'.concat(hash.concat('-'.concat(newOrder.toString())))))
   );
 }
 
@@ -85,6 +86,7 @@ export function createFirst(
   let id = buildIdFromAccountVaultAndOrder(
     account,
     vault,
+    transaction.hash.toHexString(),
     newAccountVaultPositionOrder
   );
   let accountVaultPositionFirstUpdate = AccountVaultPositionUpdate.load(id);
@@ -167,6 +169,7 @@ export function deposit(
   let id = buildIdFromAccountVaultAndOrder(
     account,
     vault,
+    transaction.hash.toHexString(),
     newAccountVaultPositionUpdateOrder
   );
   let accountVaultPositionUpdate = AccountVaultPositionUpdate.load(id);
@@ -257,6 +260,7 @@ export function transfer(
       let id = buildIdFromAccountVaultAndOrder(
         account,
         vault,
+        transaction.hash.toHexString(),
         newAccountVaultPositionOrder
       );
       log.info(
