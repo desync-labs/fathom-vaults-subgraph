@@ -7,7 +7,7 @@ import {
   Transaction,
   Vault,
 } from '../../../generated/schema';
-import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
+import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import * as vaultPositionUpdateLibrary from './vault-position-update';
 import { BIGINT_ZERO, ZERO_ADDRESS } from '../constants';
 

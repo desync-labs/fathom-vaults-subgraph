@@ -5,7 +5,7 @@ import {
   Transaction,
   Vault,
 } from '../../../generated/schema';
-import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
+import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import { booleanToString, getTimeInMillis } from '../commons';
 import { BIGINT_ZERO } from '../constants';
 import * as strategyReportLibrary from './strategy-report';

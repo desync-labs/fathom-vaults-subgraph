@@ -1,6 +1,6 @@
 import { Address } from '@graphprotocol/graph-ts';
 import { Token } from '../../generated/schema';
-import { VaultPackage } from '../../generated/FathomVault/VaultPackage';
+import { VaultPackage } from '../../generated/templates/FathomVault/VaultPackage';
 import { DEFAULT_DECIMALS } from '../utils/constants';
 
 export function getOrCreateToken(address: Address): Token {

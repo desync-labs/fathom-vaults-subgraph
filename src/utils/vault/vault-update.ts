@@ -8,7 +8,7 @@ import {
 } from '../../../generated/schema';
 import { BIGINT_ZERO } from '../constants';
 import { updateVaultDayData } from './vault-day-data';
-import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
+import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import { getTotalAssets } from './vault';
 
 export function buildIdFromVaultTxHashAndIndex(
@@ -68,39 +68,58 @@ function createVaultUpdate(
     feesPaid
   );
 
-  vaultUpdate.depositLimit = depositLimit;
-  vaultUpdate.newProtocolFee = newProtocolFee;
+  let updatesParts: string[] | null = null;
+  let secondElementOfUpdate: string | null = null;
 
-  // Balances & Shares
-  vaultUpdate.tokensDeposited = tokensDeposited;
-  vaultUpdate.tokensWithdrawn = tokensWithdrawn;
-  vaultUpdate.sharesMinted = sharesMinted;
-  vaultUpdate.sharesBurnt = sharesBurnt;
-  // Performance
-  vaultUpdate.balancePosition = balancePosition;
-  vaultUpdate.returnsGenerated = returnsGenerated;
-  vaultUpdate.accountant = accountant;
-  vaultUpdate.depositLimitModule = depositLimitModule;
-  vaultUpdate.withdrawLimitModule = withdrawLimitModule;
+  if(vault.latestUpdate != null) {
+    // Assuming accountVaultPosition.latestUpdate is a string of concatenated hashes separated by '-'
+    updatesParts = vault.latestUpdate.split('-');
+    // Check if the updatesParts array has more than two elements
+    if (updatesParts != null && updatesParts.length > 1) {
+      secondElementOfUpdate = updatesParts![1]; // Get the second element
+    }
+  }
 
-  vaultUpdate.timestamp = timestamp;
-  vaultUpdate.blockNumber = blockNumber;
-  vaultUpdate.minimumTotalIdle = minimumTotalIdle;
-  vaultUpdate.profitMaxUnlockTime = profitMaxUnlockTime;
-  vaultUpdate.totalDebt = totalDebt;
-  vaultUpdate.totalIdle = totalIdle;
-  vaultUpdate.shutdown = shutdown;
-  vaultUpdate.save();
-
-  vault.latestUpdate = vaultUpdate.id;
-  vault.balanceTokens = vaultUpdate.currentBalanceTokens;
-  vault.balanceTokensIdle = vaultUpdate.totalIdle;
-
-  vault.sharesSupply = vault.sharesSupply.plus(sharesMinted).minus(sharesBurnt);
-
-  vault.save();
-
-  updateVaultDayData(transaction, vault, vaultUpdate);
+  // AssemblyScript does not handle 'null' the same way, so we check for null before proceeding
+  if (vault.latestUpdate == null || secondElementOfUpdate != null && secondElementOfUpdate != transaction.id) {
+    // If they are different, proceed with updating the accountVaultPosition
+    vaultUpdate.depositLimit = depositLimit;
+    vaultUpdate.newProtocolFee = newProtocolFee;
+  
+    // Balances & Shares
+    vaultUpdate.tokensDeposited = tokensDeposited;
+    vaultUpdate.tokensWithdrawn = tokensWithdrawn;
+    vaultUpdate.sharesMinted = sharesMinted;
+    vaultUpdate.sharesBurnt = sharesBurnt;
+    // Performance
+    vaultUpdate.balancePosition = balancePosition;
+    vaultUpdate.returnsGenerated = returnsGenerated;
+    vaultUpdate.accountant = accountant;
+    vaultUpdate.depositLimitModule = depositLimitModule;
+    vaultUpdate.withdrawLimitModule = withdrawLimitModule;
+  
+    vaultUpdate.timestamp = timestamp;
+    vaultUpdate.blockNumber = blockNumber;
+    vaultUpdate.minimumTotalIdle = minimumTotalIdle;
+    vaultUpdate.profitMaxUnlockTime = profitMaxUnlockTime;
+    vaultUpdate.totalDebt = totalDebt;
+    vaultUpdate.totalIdle = totalIdle;
+    vaultUpdate.shutdown = shutdown;
+    vaultUpdate.save();
+  
+    vault.latestUpdate = vaultUpdate.id;
+    vault.balanceTokens = vaultUpdate.currentBalanceTokens;
+    vault.balanceTokensIdle = vaultUpdate.totalIdle;
+  
+    vault.sharesSupply = vault.sharesSupply.plus(sharesMinted).minus(sharesBurnt);
+  
+    vault.save();
+  
+    updateVaultDayData(transaction, vault, vaultUpdate);
+  } else {
+    // If they are the same, log the event and do not update
+    log.info('[VaultUpdate] Vault update already created for this transaction: {}', [transaction.id]);
+  }
 
   return vaultUpdate;
 }

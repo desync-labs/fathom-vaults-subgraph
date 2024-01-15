@@ -18,7 +18,7 @@ import {
   UpdatedWithdrawLimitModule,
   Shutdown,
   VaultPackage
-} from "../../generated/FathomVault/VaultPackage";
+} from "../../generated/templates/FathomVault/VaultPackage";
 import { StrategyReport } from "../../generated/schema";
 import {
   getOrCreateTransactionFromEvent,
@@ -215,7 +215,7 @@ export function handleTransfer(event: Transfer): void {
 }
 
 export function handleDeposit(event: Deposit): void {
-  log.debug('[Vault mappings] Handle deposit', []);
+  log.info('[Vault mappings] Handle deposit', []);
 
   let transaction = getOrCreateTransactionFromEvent(event, 'Deposit');
 
@@ -228,6 +228,8 @@ export function handleDeposit(event: Deposit): void {
     sharesMinted.toString(),
     amount.toString(),
   ]);
+
+  log.info('[Vault mappings] VAULT DEPLOYED: {}', [vaultAddress.toHexString()]);
 
   vaultLibrary.deposit(
     vaultAddress,
