@@ -356,6 +356,30 @@ export function transfer(
     shareAmount,
     transaction
   );
+
+  if (from.toHexString() == ZERO_ADDRESS) {
+    vaultUpdateLibrary.deposit(
+      vault,
+      transaction,
+      amount,
+      shareAmount,
+      getBalancePosition(vaultContract),
+      getTotalAssets(vaultAddress),
+      transaction.timestamp,
+      transaction.blockNumber
+    );
+  } else if (to.toHexString() == ZERO_ADDRESS) {
+    vaultUpdateLibrary.withdraw(
+      vault,
+      amount,
+      shareAmount,
+      transaction,
+      getBalancePosition(vaultContract),
+      getTotalAssets(vaultAddress),
+      transaction.timestamp,
+      transaction.blockNumber
+    );
+  }
 }
 
 export function strategyReported(
