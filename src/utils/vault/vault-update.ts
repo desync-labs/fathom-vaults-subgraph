@@ -8,7 +8,7 @@ import {
 } from '../../../generated/schema';
 import { BIGINT_ZERO } from '../constants';
 import { updateVaultDayData } from './vault-day-data';
-import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
+import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import { getTotalAssets } from './vault';
 
 export function buildIdFromVaultTxHashAndIndex(
@@ -27,7 +27,7 @@ export function buildIdFromVaultAndTransaction(
 ): string {
   return buildIdFromVaultTxHashAndIndex(
     vault.id,
-    transaction.id,
+    transaction.hash.toHexString(),
     transaction.index.toString()
   );
 }
@@ -60,6 +60,7 @@ function createVaultUpdate(
   shutdown: boolean
 ): VaultUpdate {
   log.info('[VaultUpdate] Creating vault update with id {}', [id]);
+  let vaultContract = VaultPackage.bind(Address.fromString(vault.id));
 
   let vaultUpdate = constructVaultUpdateEntity(
     id,
@@ -68,39 +69,57 @@ function createVaultUpdate(
     feesPaid
   );
 
-  vaultUpdate.depositLimit = depositLimit;
-  vaultUpdate.newProtocolFee = newProtocolFee;
+  let updatesParts: string[] | null = null;
+  let secondElementOfUpdate: string | null = null;
 
-  // Balances & Shares
-  vaultUpdate.tokensDeposited = tokensDeposited;
-  vaultUpdate.tokensWithdrawn = tokensWithdrawn;
-  vaultUpdate.sharesMinted = sharesMinted;
-  vaultUpdate.sharesBurnt = sharesBurnt;
-  // Performance
-  vaultUpdate.balancePosition = balancePosition;
-  vaultUpdate.returnsGenerated = returnsGenerated;
-  vaultUpdate.accountant = accountant;
-  vaultUpdate.depositLimitModule = depositLimitModule;
-  vaultUpdate.withdrawLimitModule = withdrawLimitModule;
+  if(vault.latestUpdate != null) {
+    // Assuming accountVaultPosition.latestUpdate is a string of concatenated hashes separated by '-'
+    updatesParts = vault.latestUpdate.split('-');
+    // Check if the updatesParts array has more than two elements
+    if (updatesParts != null && updatesParts.length > 1) {
+      secondElementOfUpdate = updatesParts![1]; // Get the second element
+    }
+  }
 
-  vaultUpdate.timestamp = timestamp;
-  vaultUpdate.blockNumber = blockNumber;
-  vaultUpdate.minimumTotalIdle = minimumTotalIdle;
-  vaultUpdate.profitMaxUnlockTime = profitMaxUnlockTime;
-  vaultUpdate.totalDebt = totalDebt;
-  vaultUpdate.totalIdle = totalIdle;
-  vaultUpdate.shutdown = shutdown;
-  vaultUpdate.save();
-
-  vault.latestUpdate = vaultUpdate.id;
-  vault.balanceTokens = vaultUpdate.currentBalanceTokens;
-  vault.balanceTokensIdle = vaultUpdate.totalIdle;
-
-  vault.sharesSupply = vault.sharesSupply.plus(sharesMinted).minus(sharesBurnt);
-
-  vault.save();
-
-  updateVaultDayData(transaction, vault, vaultUpdate);
+  // AssemblyScript does not handle 'null' the same way, so we check for null before proceeding
+  if (vault.latestUpdate == null || secondElementOfUpdate != null && secondElementOfUpdate != transaction.hash.toHexString()) {
+    // If they are different, proceed with updating the accountVaultPosition
+    vaultUpdate.depositLimit = depositLimit;
+    vaultUpdate.newProtocolFee = newProtocolFee;
+  
+    // Balances & Shares
+    vaultUpdate.tokensDeposited = tokensDeposited;
+    vaultUpdate.tokensWithdrawn = tokensWithdrawn;
+    vaultUpdate.sharesMinted = sharesMinted;
+    vaultUpdate.sharesBurnt = sharesBurnt;
+    // Performance
+    vaultUpdate.balancePosition = balancePosition;
+    vaultUpdate.returnsGenerated = returnsGenerated;
+    vaultUpdate.accountant = accountant;
+    vaultUpdate.depositLimitModule = depositLimitModule;
+    vaultUpdate.withdrawLimitModule = withdrawLimitModule;
+  
+    vaultUpdate.timestamp = timestamp;
+    vaultUpdate.blockNumber = blockNumber;
+    vaultUpdate.minimumTotalIdle = minimumTotalIdle;
+    vaultUpdate.profitMaxUnlockTime = profitMaxUnlockTime;
+    vaultUpdate.totalDebt = totalDebt;
+    vaultUpdate.totalIdle = totalIdle;
+    vaultUpdate.shutdown = shutdown;
+    vaultUpdate.save();
+  
+    vault.latestUpdate = vaultUpdate.id;
+    vault.balanceTokens = vaultUpdate.currentBalanceTokens;
+    vault.balanceTokensIdle = vaultUpdate.totalIdle;
+    vault.sharesSupply = vaultContract.totalSupply();
+  
+    vault.save();
+  
+    updateVaultDayData(transaction, vault, vaultUpdate);
+  } else {
+    // If they are the same, log the event and do not update
+    log.info('[VaultUpdate] Vault update already created for this transaction: {}', [transaction.id]);
+  }
 
   return vaultUpdate;
 }
@@ -252,33 +271,38 @@ export function withdraw(
   timestamp: BigInt,
   blockNumber: BigInt
 ): VaultUpdate {
+  log.info('[VaultUpdate] Withdraw', []);
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
+  let vaultUpdate = VaultUpdate.load(vaultUpdateId);
 
-  let newVaultUpdate = createVaultUpdate(
-    vaultUpdateId,
-    timestamp,
-    blockNumber,
-    transaction,
-    vault,
-    BIGINT_ZERO, // TokensDeposited
-    withdrawnAmount,
-    BIGINT_ZERO, // SharesMinted
-    sharesBurnt,
-    balancePosition,
-    BIGINT_ZERO, // returnsGenerated
-    null, // totalFees
-    null, // newProtocolFee
-    vault.depositLimit,
-    vault.accountant,
-    vault.depositLimitModule,
-    vault.withdrawLimitModule,
-    vault.minimumTotalIdle,
-    vault.profitMaxUnlockTime,
-    vault.totalDebt,
-    vault.totalIdle,
-    vault.shutdown
-  );
-  return newVaultUpdate;
+  if (vaultUpdate === null) {
+    vaultUpdate = createVaultUpdate(
+      vaultUpdateId,
+      timestamp,
+      blockNumber,
+      transaction,
+      vault,
+      BIGINT_ZERO, // TokensDeposited
+      withdrawnAmount,
+      BIGINT_ZERO, // SharesMinted
+      sharesBurnt,
+      balancePosition,
+      BIGINT_ZERO, // returnsGenerated
+      null, // totalFees
+      null, // newProtocolFee
+      vault.depositLimit,
+      vault.accountant,
+      vault.depositLimitModule,
+      vault.withdrawLimitModule,
+      vault.minimumTotalIdle,
+      vault.profitMaxUnlockTime,
+      vault.totalDebt,
+      vault.totalIdle,
+      vault.shutdown
+    );
+  }
+
+  return vaultUpdate as VaultUpdate;
 }
 
 export function strategyReported(
@@ -290,40 +314,45 @@ export function strategyReported(
   timestamp: BigInt,
   blockNumber: BigInt,
 ): VaultUpdate {
+  log.debug('[VaultUpdate] Strategy Reported', []);
   let vaultUpdateId = buildIdFromVaultAndTransaction(vault, transaction);
+  let vaultUpdate = VaultUpdate.load(vaultUpdateId);
+  
+  if (vaultUpdate === null) {
+    // Need to find netReturnsGenerated by subtracting out the fees
+    let vaultContract = VaultPackage.bind(Address.fromString(vault.id));
+    let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate!);
+    let pricePerShare = vaultContract.pricePerShare();
+  
+    let feesPaidDuringReport = currentTotalFees.minus(latestVaultUpdate.totalFees);
+  
+    let netReturnsGenerated = grossReturnsGenerated.minus(feesPaidDuringReport);
 
-  // Need to find netReturnsGenerated by subtracting out the fees
-  let vaultContract = VaultPackage.bind(Address.fromString(vault.id));
-  let latestVaultUpdate = VaultUpdate.load(vault.latestUpdate!);
-  let pricePerShare = vaultContract.pricePerShare();
+    vaultUpdate = createVaultUpdate(
+      vaultUpdateId,
+      timestamp,
+      blockNumber,
+      transaction,
+      vault,
+      BIGINT_ZERO, // TokensDeposited
+      BIGINT_ZERO, // TokensWithdrawn
+      BIGINT_ZERO, // SharesMinted
+      BIGINT_ZERO, // SharesBurnt
+      balancePosition,
+      netReturnsGenerated,
+      feesPaidDuringReport,
+      null,
+      vault.depositLimit,
+      vault.accountant,
+      vault.depositLimitModule,
+      vault.withdrawLimitModule,
+      vault.minimumTotalIdle,
+      vault.profitMaxUnlockTime,
+      vault.totalDebt,
+      vault.totalIdle,
+      vault.shutdown
+    );
+  }
 
-  let feesPaidDuringReport = currentTotalFees.minus(latestVaultUpdate.totalFees);
-
-  let netReturnsGenerated = grossReturnsGenerated.minus(feesPaidDuringReport);
-
-  let newVaultUpdate = createVaultUpdate(
-    vaultUpdateId,
-    timestamp,
-    blockNumber,
-    transaction,
-    vault,
-    BIGINT_ZERO, // TokensDeposited
-    BIGINT_ZERO, // TokensWithdrawn
-    BIGINT_ZERO, // SharesMinted
-    BIGINT_ZERO, // SharesBurnt
-    balancePosition,
-    netReturnsGenerated,
-    feesPaidDuringReport,
-    null,
-    vault.depositLimit,
-    vault.accountant,
-    vault.depositLimitModule,
-    vault.withdrawLimitModule,
-    vault.minimumTotalIdle,
-    vault.profitMaxUnlockTime,
-    vault.totalDebt,
-    vault.totalIdle,
-    vault.shutdown
-  );
-  return newVaultUpdate;
+  return vaultUpdate as VaultUpdate;
 }

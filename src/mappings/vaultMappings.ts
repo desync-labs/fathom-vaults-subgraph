@@ -18,7 +18,7 @@ import {
   UpdatedWithdrawLimitModule,
   Shutdown,
   VaultPackage
-} from "../../generated/FathomVault/VaultPackage";
+} from "../../generated/templates/FathomVault/VaultPackage";
 import { StrategyReport } from "../../generated/schema";
 import {
   getOrCreateTransactionFromEvent,
@@ -160,10 +160,10 @@ export function handleTransfer(event: Transfer): void {
     event.params.to.toHexString(),
     event.transaction.hash.toHexString(),
   ]);
-  if (
-    event.params.from.toHexString() != ZERO_ADDRESS &&
-    event.params.to.toHexString() != ZERO_ADDRESS
-  ) {
+  // if (
+  //   event.params.from.toHexString() != ZERO_ADDRESS &&
+  //   event.params.to.toHexString() != ZERO_ADDRESS
+  // ) {
     if (!vaultLibrary.isVault(event.address)) {
       log.info(
         '[Transfer] Transfer {} is not on behalf of a vault entity. Not processing.',
@@ -202,20 +202,20 @@ export function handleTransfer(event: Transfer): void {
       event.address,
       transaction
     );
-  } else {
-    log.info(
-      '[Vault mappings] Not processing transfer: From: {} - To: {}. TX hash: {}',
-      [
-        event.params.from.toHexString(),
-        event.params.to.toHexString(),
-        event.transaction.hash.toHexString(),
-      ]
-    );
-  }
+  // } else {
+  //   log.info(
+  //     '[Vault mappings] Not processing transfer: From: {} - To: {}. TX hash: {}',
+  //     [
+  //       event.params.from.toHexString(),
+  //       event.params.to.toHexString(),
+  //       event.transaction.hash.toHexString(),
+  //     ]
+  //   );
+  // }
 }
 
 export function handleDeposit(event: Deposit): void {
-  log.debug('[Vault mappings] Handle deposit', []);
+  log.info('[Vault mappings] Handle deposit', []);
 
   let transaction = getOrCreateTransactionFromEvent(event, 'Deposit');
 
@@ -228,6 +228,8 @@ export function handleDeposit(event: Deposit): void {
     sharesMinted.toString(),
     amount.toString(),
   ]);
+
+  log.info('[Vault mappings] VAULT DEPLOYED: {}', [vaultAddress.toHexString()]);
 
   vaultLibrary.deposit(
     vaultAddress,

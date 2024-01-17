@@ -8,7 +8,7 @@ import {
   Vault,
   VaultUpdate,
 } from '../../../generated/schema';
-import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
+import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import { FathomVault as VaultTemplate } from '../../../generated/templates';
 import {
   BIGINT_ZERO,
@@ -82,12 +82,18 @@ export function getOrCreate(
   transaction: Transaction,
   createTemplate: boolean
 ): Vault {
-  log.debug('[Vault] Get or create', []);
+  log.info('[Vault] Get or create', []);
   let id = buildId(vaultAddress);
+  log.info('[Vault] Vault address: {}', [id]);
   let vault = Vault.load(id);
 
-  if (vault == null) {
-    log.info('CREATING NEW VAULT!!!!!!!!!!!!!!!!!!!!!1', []);
+  if (vault != null) {
+    // If the vault exists, log its properties
+    log.info('[Vault] Vault ID: {}', [vault.id]);
+    log.info('[Vault] Vault Token: {}', [vault.token]);
+  } else {
+    // If the vault does not exist, create a new one
+    log.info('CREATING NEW VAULT!!!!!!!!!!!!!!!!!!!!!', []);
     vault = createNewVaultFromAddress(vaultAddress, transaction);
 
     if (createTemplate) {
@@ -121,7 +127,7 @@ export function deposit(
   timestamp: BigInt,
   blockNumber: BigInt
 ): void {
-  log.debug(
+  log.info(
     '[Vault] Deposit vault: {} receiver: {} depositAmount: {} sharesMinted: {}',
     [
       vaultAddress.toHexString(),
@@ -132,7 +138,7 @@ export function deposit(
   );
   let vaultContract = VaultPackage.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(receiver);
-  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
+  let vault = Vault.load(vaultAddress.toHexString()) as Vault;
 
   accountVaultPositionLibrary.deposit(
     vaultContract,
@@ -220,7 +226,7 @@ export function withdraw(
   let vaultContract = VaultPackage.bind(vaultAddress);
   let account = accountLibrary.getOrCreate(from);
   let balancePosition = getBalancePosition(vaultContract);
-  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
+  let vault = Vault.load(vaultAddress.toHexString()) as Vault;
   withdrawalLibrary.getOrCreate(
     account,
     vault,
@@ -329,7 +335,7 @@ export function transfer(
   let shareToken = tokenLibrary.getOrCreateToken(vaultAddress);
   let fromAccount = accountLibrary.getOrCreate(from);
   let toAccount = accountLibrary.getOrCreate(to);
-  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
+  let vault = Vault.load(vaultAddress.toHexString()) as Vault;
   transferLibrary.getOrCreate(
     fromAccount,
     toAccount,
@@ -350,6 +356,30 @@ export function transfer(
     shareAmount,
     transaction
   );
+
+  if (from.toHexString() == ZERO_ADDRESS) {
+    vaultUpdateLibrary.deposit(
+      vault,
+      transaction,
+      amount,
+      shareAmount,
+      getBalancePosition(vaultContract),
+      getTotalAssets(vaultAddress),
+      transaction.timestamp,
+      transaction.blockNumber
+    );
+  } else if (to.toHexString() == ZERO_ADDRESS) {
+    vaultUpdateLibrary.withdraw(
+      vault,
+      amount,
+      shareAmount,
+      transaction,
+      getBalancePosition(vaultContract),
+      getTotalAssets(vaultAddress),
+      transaction.timestamp,
+      transaction.blockNumber
+    );
+  }
 }
 
 export function strategyReported(
@@ -364,7 +394,7 @@ export function strategyReported(
     vaultAddress.toHexString(),
     transaction.hash.toHexString(),
   ]);
-  let vault = getOrCreate(vaultAddress, transaction, DO_CREATE_VAULT_TEMPLATE);
+  let vault = Vault.load(vaultAddress.toHexString()) as Vault;
 
   if (!vault.latestUpdate) {
     log.warning(

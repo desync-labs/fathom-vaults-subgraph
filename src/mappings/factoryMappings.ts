@@ -1,19 +1,17 @@
-import { Address, log } from "@graphprotocol/graph-ts";
+import { log } from "@graphprotocol/graph-ts";
 import {
   VaultPackageUpdated,
   FeeConfigUpdated,
-  VaultDeployed,
-  FactoryPackage
+  VaultDeployed
 } from "../../generated/Factory/FactoryPackage";
-
-import { StrategyReport } from "../../generated/schema";
 import {
   getOrCreateTransactionFromEvent,
 } from '../utils/transaction';
-import * as strategyLibrary from '../utils/strategy/strategy';
 import * as factoryLibrary from '../utils/factory/factory';
-import { fromSharesToAmount } from '../utils/commons';
-import { ZERO_ADDRESS, BIGINT_ZERO } from '../utils/constants';
+import * as vaultLibrary from '../utils/vault/vault';
+import {
+  DO_CREATE_VAULT_TEMPLATE,
+} from '../utils/constants';
 
 export function handleVaultPackageUpdated(event: VaultPackageUpdated): void {
   log.info('[Factory mappings] Handle Vault Package updated', []);
@@ -56,4 +54,9 @@ export function handleVaultDeployed(event: VaultDeployed): void {
     event.params.vault,
     ethTransaction
   );
+
+  log.info('[Factory mappings] VAULT DEPLOYED: {}', [event.params.vault.toHexString()]);
+
+  let vault = vaultLibrary.getOrCreate(event.params.vault, ethTransaction, DO_CREATE_VAULT_TEMPLATE);
+  vault.save();
 }
