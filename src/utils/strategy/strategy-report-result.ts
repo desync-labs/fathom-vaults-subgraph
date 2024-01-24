@@ -62,7 +62,7 @@ export function create(
         .div(previousReport.currentDebt.toBigDecimal());
       strategyReportResult.durationPr = profitOverTotalDebt;
       let yearOverDuration = DAYS_PER_YEAR.div(msInDays);
-      let apr = profitOverTotalDebt.times(yearOverDuration);
+      let apr = profitOverTotalDebt.times(yearOverDuration).times(BigDecimal.fromString('100'));
 
       log.info(
         '[StrategyReportResult] Report Result - Duration: {} ms / {} days - Duration (Year): {} - Profit / Total Debt: {} / APR: {} - TxHash: {}',
