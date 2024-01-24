@@ -1,11 +1,13 @@
-import { log } from '@graphprotocol/graph-ts';
+import { BigDecimal, log } from '@graphprotocol/graph-ts';
 import {
   StrategyReport,
   StrategyReportResult,
   Transaction,
+  Vault,
+  Strategy
 } from '../../../generated/schema';
 import { buildIdFromTransaction } from '../commons';
-import { BIGDECIMAL_ZERO, DAYS_PER_YEAR, MS_PER_DAY } from '../constants';
+import { BIGDECIMAL_ZERO, DAYS_PER_YEAR, MS_PER_DAY, BIGINT_ZERO } from '../constants';
 
 export function create(
   transaction: Transaction,
@@ -40,7 +42,7 @@ export function create(
     strategyReportResult.apr = BIGDECIMAL_ZERO;
     strategyReportResult.transaction = transaction.id;
 
-    let profit = currentReport.gain.minus(previousReport.gain);
+    let profit = currentReport.gain;
     let msInDays = strategyReportResult.duration.div(MS_PER_DAY);
     log.info(
       '[StrategyReportResult] Report Result - Start / End: {} / {} - Duration: {} (days {}) - Profit: {} - TxHash: {}',
@@ -75,6 +77,19 @@ export function create(
       );
       strategyReportResult.apr = apr;
     }
+
+    let strategy = Strategy.load(currentReport.strategy);
+    let vault = Vault.load(strategy.vault);
+    let reportCount = strategy.reportsCount;
+    let numerator = (vault.apr).plus(strategyReportResult.apr);
+    if (reportCount.equals(BIGDECIMAL_ZERO)) {
+      vault.apr = numerator;
+    } else {
+      vault.apr = numerator.div(reportCount);
+    }
+    strategy.reportsCount = reportCount.plus(BigDecimal.fromString('1'));
+    strategy.save();
+    vault.save();
     strategyReportResult.save();
     return strategyReportResult;
   }

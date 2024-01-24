@@ -14,6 +14,7 @@ import {
   BIGINT_ZERO,
   DO_CREATE_VAULT_TEMPLATE,
   ZERO_ADDRESS,
+  BIGDECIMAL_ZERO
 } from '../constants';
 import { getOrCreateToken } from '../token';
 import * as depositLibrary from '../deposit';
@@ -54,6 +55,7 @@ const createNewVaultFromAddress = (
   vaultEntity.useDefaultQueue = true;
 
   vaultEntity.sharesSupply = BIGINT_ZERO;
+  vaultEntity.apr = BIGDECIMAL_ZERO;
 
   // vault fields
   vaultEntity.activation = transaction.timestamp;

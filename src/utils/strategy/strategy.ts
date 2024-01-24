@@ -1,4 +1,4 @@
-import { log, ethereum, BigInt, Address, Bytes } from '@graphprotocol/graph-ts';
+import { log, ethereum, BigInt, Address, Bytes, BigDecimal } from '@graphprotocol/graph-ts';
 import {
   Strategy,
   StrategyReport,
@@ -7,7 +7,7 @@ import {
 } from '../../../generated/schema';
 import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import { booleanToString, getTimeInMillis } from '../commons';
-import { BIGINT_ZERO } from '../constants';
+import { BIGINT_ZERO, BIGDECIMAL_ZERO } from '../constants';
 import * as strategyReportLibrary from './strategy-report';
 import * as strategyReportResultLibrary from './strategy-report-result';
 
@@ -44,6 +44,7 @@ export function createAndGet(
     strategy.maxDebt = maxDebt;
     strategy.delegatedAssets = BigInt.fromI32(0);
     strategy.inQueue = true;
+    strategy.reportsCount = BIGDECIMAL_ZERO;
 
     strategy.save();
 

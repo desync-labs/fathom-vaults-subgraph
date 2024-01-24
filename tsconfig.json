@@ -5,6 +5,11 @@
           "node"
       ],
       "resolveJsonModule": true,
-      "moduleResolution": "node"
+      "moduleResolution": "node",
+      "lib": [
+        "es2018",
+        "es2015",
+        "dom"
+      ]
   }
 }

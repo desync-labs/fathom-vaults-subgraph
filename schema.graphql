@@ -112,6 +112,8 @@ type Vault @entity {
   totalDebt: BigInt!
   "Current assets held in the vault contract. Replacing balanceOf(this) to avoid price_per_share manipulation."
   totalIdle: BigInt!
+  "Annual Percentage Rate."
+  apr: BigDecimal!
 }
 
 type VaultUpdate @entity {
@@ -344,6 +346,7 @@ type Strategy @entity {
   delegatedAssets: BigInt
   "Defines whether this strategy is within the vault queue"
   inQueue: Boolean!
+  reportsCount: BigDecimal!
 }
 
 type StrategyReport @entity {
