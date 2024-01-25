@@ -45,6 +45,7 @@ export function createAndGet(
     strategy.delegatedAssets = BigInt.fromI32(0);
     strategy.inQueue = true;
     strategy.reportsCount = BIGDECIMAL_ZERO;
+    strategy.apr = BIGDECIMAL_ZERO;
 
     strategy.save();
 

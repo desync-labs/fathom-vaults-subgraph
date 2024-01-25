@@ -347,6 +347,8 @@ type Strategy @entity {
   "Defines whether this strategy is within the vault queue"
   inQueue: Boolean!
   reportsCount: BigDecimal!
+  "Annual Percentage Rate of the Strategy."
+  apr: BigDecimal!
 }
 
 type StrategyReport @entity {

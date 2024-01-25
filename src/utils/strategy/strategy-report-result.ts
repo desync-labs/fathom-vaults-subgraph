@@ -42,7 +42,7 @@ export function create(
     strategyReportResult.apr = BIGDECIMAL_ZERO;
     strategyReportResult.transaction = transaction.id;
 
-    let profit = currentReport.gain;
+    let profit = currentReport.gain.plus(currentReport.loss);
     let msInDays = strategyReportResult.duration.div(MS_PER_DAY);
     log.info(
       '[StrategyReportResult] Report Result - Start / End: {} / {} - Duration: {} (days {}) - Profit: {} - TxHash: {}',
@@ -81,11 +81,14 @@ export function create(
     let strategy = Strategy.load(currentReport.strategy);
     let vault = Vault.load(strategy.vault);
     let reportCount = strategy.reportsCount;
-    let numerator = (vault.apr).plus(strategyReportResult.apr);
+    let numeratorVault = (vault.apr).plus(strategyReportResult.apr);
+    let numeratorStrategy = (strategy.apr).plus(strategyReportResult.apr);
     if (reportCount.equals(BIGDECIMAL_ZERO)) {
-      vault.apr = numerator;
+      vault.apr = numeratorVault;
+      strategy.apr = numeratorStrategy;
     } else {
-      vault.apr = numerator.div(reportCount);
+      vault.apr = numeratorVault.div(reportCount);
+      strategy.apr = numeratorStrategy.div(reportCount);
     }
     strategy.reportsCount = reportCount.plus(BigDecimal.fromString('1'));
     strategy.save();
