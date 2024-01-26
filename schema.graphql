@@ -114,6 +114,8 @@ type Vault @entity {
   totalIdle: BigInt!
   "Annual Percentage Rate."
   apr: BigDecimal!
+  "Historical Annual Percentage Rate."
+  historicalApr: [BigDecimal!]
 }
 
 type VaultUpdate @entity {
@@ -349,6 +351,8 @@ type Strategy @entity {
   reportsCount: BigDecimal!
   "Annual Percentage Rate of the Strategy."
   apr: BigDecimal!
+  "Historical Annual Percentage Rate of teh Strategy."
+  historicalApr: [BigDecimal!]
 }
 
 type StrategyReport @entity {

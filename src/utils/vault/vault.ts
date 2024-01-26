@@ -75,6 +75,7 @@ const createNewVaultFromAddress = (
   //Empty at creation
   vaultEntity.defaultQueue = [];
   vaultEntity.strategyIds = [];
+  vaultEntity.historicalApr = [];
 
   return vaultEntity;
 };

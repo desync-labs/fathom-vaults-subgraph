@@ -83,13 +83,24 @@ export function create(
     let reportCount = strategy.reportsCount;
     let numeratorVault = (vault.apr).plus(strategyReportResult.apr);
     let numeratorStrategy = (strategy.apr).plus(strategyReportResult.apr);
+    let vaultApr: BigDecimal;
+    let strategyApr: BigDecimal;
+    let vaultsHistoricalApr = vault.historicalApr;
+    let strategyHistoricalApr = strategy.historicalApr;      
     if (reportCount.equals(BIGDECIMAL_ZERO)) {
-      vault.apr = numeratorVault;
-      strategy.apr = numeratorStrategy;
+      vaultApr = numeratorVault      
+      strategyApr = numeratorStrategy;           
     } else {
-      vault.apr = numeratorVault.div(reportCount);
-      strategy.apr = numeratorStrategy.div(reportCount);
+      vaultApr = numeratorVault.div(reportCount);
+      strategyApr = numeratorStrategy.div(reportCount);
     }
+    vault.apr = vaultApr;
+    strategy.apr = strategyApr;
+    //Add the strates addr to the vaults withdrawlQueue
+    vaultsHistoricalApr.push(vaultApr);
+    strategyHistoricalApr.push(strategyApr);
+    vault.historicalApr = vaultsHistoricalApr;
+    strategy.historicalApr = strategyHistoricalApr;
     strategy.reportsCount = reportCount.plus(BigDecimal.fromString('1'));
     strategy.save();
     vault.save();
