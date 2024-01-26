@@ -1,11 +1,13 @@
-import { log } from '@graphprotocol/graph-ts';
+import { BigDecimal, log } from '@graphprotocol/graph-ts';
 import {
   StrategyReport,
   StrategyReportResult,
   Transaction,
+  Vault,
+  Strategy
 } from '../../../generated/schema';
 import { buildIdFromTransaction } from '../commons';
-import { BIGDECIMAL_ZERO, DAYS_PER_YEAR, MS_PER_DAY } from '../constants';
+import { BIGDECIMAL_ZERO, DAYS_PER_YEAR, MS_PER_DAY, BIGINT_ZERO } from '../constants';
 
 export function create(
   transaction: Transaction,
@@ -40,7 +42,7 @@ export function create(
     strategyReportResult.apr = BIGDECIMAL_ZERO;
     strategyReportResult.transaction = transaction.id;
 
-    let profit = currentReport.gain.minus(previousReport.gain);
+    let profit = currentReport.gain.plus(currentReport.loss);
     let msInDays = strategyReportResult.duration.div(MS_PER_DAY);
     log.info(
       '[StrategyReportResult] Report Result - Start / End: {} / {} - Duration: {} (days {}) - Profit: {} - TxHash: {}',
@@ -60,7 +62,7 @@ export function create(
         .div(previousReport.currentDebt.toBigDecimal());
       strategyReportResult.durationPr = profitOverTotalDebt;
       let yearOverDuration = DAYS_PER_YEAR.div(msInDays);
-      let apr = profitOverTotalDebt.times(yearOverDuration);
+      let apr = profitOverTotalDebt.times(yearOverDuration).times(BigDecimal.fromString('100'));
 
       log.info(
         '[StrategyReportResult] Report Result - Duration: {} ms / {} days - Duration (Year): {} - Profit / Total Debt: {} / APR: {} - TxHash: {}',
@@ -75,6 +77,22 @@ export function create(
       );
       strategyReportResult.apr = apr;
     }
+
+    let strategy = Strategy.load(currentReport.strategy);
+    let vault = Vault.load(strategy.vault);
+    let reportCount = strategy.reportsCount;
+    let numeratorVault = (vault.apr).plus(strategyReportResult.apr);
+    let numeratorStrategy = (strategy.apr).plus(strategyReportResult.apr);
+    if (reportCount.equals(BIGDECIMAL_ZERO)) {
+      vault.apr = numeratorVault;
+      strategy.apr = numeratorStrategy;
+    } else {
+      vault.apr = numeratorVault.div(reportCount);
+      strategy.apr = numeratorStrategy.div(reportCount);
+    }
+    strategy.reportsCount = reportCount.plus(BigDecimal.fromString('1'));
+    strategy.save();
+    vault.save();
     strategyReportResult.save();
     return strategyReportResult;
   }

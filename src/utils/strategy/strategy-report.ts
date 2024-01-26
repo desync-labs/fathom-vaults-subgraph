@@ -1,4 +1,4 @@
-import { log, ethereum, BigInt } from '@graphprotocol/graph-ts';
+import { log, ethereum, BigInt, BigDecimal } from '@graphprotocol/graph-ts';
 import { Strategy, StrategyReport } from '../../../generated/schema';
 
 import { buildIdFromEvent, getTimestampInMillis } from '../commons';
