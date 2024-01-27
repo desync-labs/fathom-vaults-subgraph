@@ -115,7 +115,7 @@ type Vault @entity {
   "Annual Percentage Rate."
   apr: BigDecimal!
   "Historical Annual Percentage Rate."
-  historicalApr: [BigDecimal!]
+  historicalApr: [VaultHistoricalApr!] @derivedFrom(field: "vault")
 }
 
 type VaultUpdate @entity {
@@ -352,7 +352,7 @@ type Strategy @entity {
   "Annual Percentage Rate of the Strategy."
   apr: BigDecimal!
   "Historical Annual Percentage Rate of teh Strategy."
-  historicalApr: [BigDecimal!]
+  historicalApr: [StrategyHistoricalApr!] @derivedFrom(field: "strategy")
 }
 
 type StrategyReport @entity {
@@ -453,4 +453,24 @@ type Factory @entity {
   vaultPackage: Bytes!
   "List of all vaults created by this factory"
   vaults: [Bytes!]!
+}
+
+type VaultHistoricalApr @entity {
+  id: ID!
+  "time in UTC"
+  timestamp: BigInt!
+  "The Annual Percentage Rate"
+  apr: BigDecimal!
+  "The Vault"
+  vault: Vault!
+}
+
+type StrategyHistoricalApr @entity {
+  id: ID!
+  "time in UTC"
+  timestamp: BigInt!
+  "The Annual Percentage Rate"
+  apr: BigDecimal!
+  "The Strategy"
+  strategy: Strategy!
 }
