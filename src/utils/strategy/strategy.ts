@@ -46,7 +46,6 @@ export function createAndGet(
     strategy.inQueue = true;
     strategy.reportsCount = BIGDECIMAL_ZERO;
     strategy.apr = BIGDECIMAL_ZERO;
-    strategy.historicalApr = [];
 
     strategy.save();
 

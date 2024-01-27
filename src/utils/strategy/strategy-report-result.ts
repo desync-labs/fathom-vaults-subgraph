@@ -4,7 +4,9 @@ import {
   StrategyReportResult,
   Transaction,
   Vault,
-  Strategy
+  Strategy,
+  VaultHistoricalApr,
+  StrategyHistoricalApr
 } from '../../../generated/schema';
 import { buildIdFromTransaction } from '../commons';
 import { BIGDECIMAL_ZERO, DAYS_PER_YEAR, MS_PER_DAY, BIGINT_ZERO } from '../constants';
@@ -96,11 +98,17 @@ export function create(
     }
     vault.apr = vaultApr;
     strategy.apr = strategyApr;
+    let newVaultHistoricalApr = new VaultHistoricalApr(id);
+    newVaultHistoricalApr.timestamp = currentReport.timestamp;
+    newVaultHistoricalApr.apr = vaultApr;
+    newVaultHistoricalApr.vault = vault.id;
+    let newStrategyHistoricalApr = new StrategyHistoricalApr(id);
+    newStrategyHistoricalApr.timestamp = currentReport.timestamp;
+    newStrategyHistoricalApr.apr = strategyApr;
+    newStrategyHistoricalApr.strategy = strategy.id;
     //Add the strates addr to the vaults withdrawlQueue
-    vaultsHistoricalApr.push(vaultApr);
-    strategyHistoricalApr.push(strategyApr);
-    vault.historicalApr = vaultsHistoricalApr;
-    strategy.historicalApr = strategyHistoricalApr;
+    newVaultHistoricalApr.save();
+    newStrategyHistoricalApr.save();
     strategy.reportsCount = reportCount.plus(BigDecimal.fromString('1'));
     strategy.save();
     vault.save();
