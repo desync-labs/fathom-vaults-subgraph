@@ -62,6 +62,10 @@ export function createAndGet(
       vaultInstance.strategyIds = strategyIds;
       vaultInstance.save();
     }
+  } else {
+    log.info('[Strategy] Strategy {} already exists', [strategyId]);
+    strategy.vault = vault.toHexString();
+    strategy.save();
   }
   return strategy as Strategy;
 }
