@@ -1,4 +1,4 @@
-import { log, ethereum, BigInt, Address, Bytes, BigDecimal } from '@graphprotocol/graph-ts';
+import { log, ethereum, BigInt, Address, Bytes, BigDecimal, store } from '@graphprotocol/graph-ts';
 import {
   Strategy,
   StrategyReport,
@@ -271,5 +271,69 @@ export function updateDebtPurchased(
   vault.totalDebt = vault.totalDebt.minus(amount);
   vault.totalIdle = vault.totalIdle.plus(amount);
   strategy.save();
+  vault.save();
+}
+
+export function remove(
+  strategyAddress: Address,
+  vaultAddress: Address,
+  transaction: Transaction
+): void {
+  let strategyId = buildId(strategyAddress);
+  let txHash = transaction.hash.toHexString();
+  log.info(
+    '[Strategy Mapping] Remove strategy {} from vault {} tx {}',
+    [strategyId, vaultAddress.toHexString(), txHash]
+  );
+
+  let vaultId = vaultAddress.toHexString();
+  let vault = Vault.load(vaultId);
+  if (!vault) {
+    log.critical(
+      '[Strategy Mapping] Vault entity does not exist: {} remove strategy tx {}',
+      [vaultId, txHash]
+    );
+    return;
+  }
+
+  let strategy = Strategy.load(strategyId);
+  if (!strategy) {
+    log.critical(
+      '[Strategy Mapping] Strategy entity does not exist: {} remove strategy tx {}',
+      [strategyId, txHash]
+    );
+    return;
+  }
+
+  if (strategy.vault != vaultId) {
+    log.critical(
+      '[Strategy Mapping] Strategy entity {} is not linked to this vault: {} tx: {}',
+      [strategyId, vaultId, txHash]
+    );
+    return;
+  }
+
+  let withdrawlQueue = vault.defaultQueue;
+  let newQueue: string[] = [];
+  for (let i = 0; i < withdrawlQueue.length; i++) {
+    if (withdrawlQueue[i] != strategyId) {
+      newQueue.push(withdrawlQueue[i]);
+    }
+  }
+  vault.defaultQueue = newQueue;
+
+  // Remove strategy from vault
+  let strategyIds = vault.strategyIds;
+  let newStrategyIds: string[] = [];
+  for (let i = 0; i < strategyIds.length; i++) {
+    if (strategyIds[i] != strategyId) {
+      newStrategyIds.push(strategyIds[i]);
+    }
+  }
+
+  strategy.vault = '';
+  strategy.save();
+
+  vault.strategyIds = newStrategyIds;
   vault.save();
 }
