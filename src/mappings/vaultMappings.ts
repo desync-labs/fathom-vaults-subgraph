@@ -81,14 +81,23 @@ export function handleStrategyChanged(event: StrategyChanged): void {
     event,
     'StrategyChanged'
   );
-  strategyLibrary.createAndGet(
-    transaction.id,
-    event.params.strategy,
-    event.address,
-    BIGINT_ZERO,
-    BIGINT_ZERO,
-    transaction,
-  );
+
+  if (event.params.changeType == 0) {
+    strategyLibrary.createAndGet(
+      transaction.id,
+      event.params.strategy,
+      event.address,
+      BIGINT_ZERO,
+      BIGINT_ZERO,
+      transaction,
+    );
+  } else if (event.params.changeType == 1) {
+    strategyLibrary.remove(
+      event.params.strategy,
+      event.address,
+      transaction
+    );
+  }
 }
 
 export function handleStrategyReported(event: StrategyReported): void {

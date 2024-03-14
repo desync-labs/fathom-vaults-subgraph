@@ -329,7 +329,7 @@ type Strategy @entity {
   "Ethereum address"
   id: ID!
   "The Vault"
-  vault: Vault!
+  vault: Vault
   "Ethereum Transaction"
   transaction: Transaction!
   "Creation timestamp"
