@@ -112,14 +112,10 @@ type Vault @entity {
   totalDebt: BigInt!
   "Current assets held in the vault contract. Replacing balanceOf(this) to avoid price_per_share manipulation."
   totalIdle: BigInt!
-  "Total fees in percentage"
-  totalFees: BigInt!
-  "Total refunds in percentage"
-  totalRefunds: BigInt!
-  "Fees in percentage that go to the protocol"
-  protocolFees: BigInt!
-  "Address that receives the protocol fees"
-  protocolFeeRecipient: Bytes!
+  "Annual Percentage Rate."
+  apr: BigDecimal!
+  "Historical Annual Percentage Rate."
+  historicalApr: [VaultHistoricalApr!] @derivedFrom(field: "vault")
 }
 
 type VaultUpdate @entity {
@@ -333,7 +329,7 @@ type Strategy @entity {
   "Ethereum address"
   id: ID!
   "The Vault"
-  vault: Vault!
+  vault: Vault
   "Ethereum Transaction"
   transaction: Transaction!
   "Creation timestamp"
@@ -352,6 +348,11 @@ type Strategy @entity {
   delegatedAssets: BigInt
   "Defines whether this strategy is within the vault queue"
   inQueue: Boolean!
+  reportsCount: BigDecimal!
+  "Annual Percentage Rate of the Strategy."
+  apr: BigDecimal!
+  "Historical Annual Percentage Rate of teh Strategy."
+  historicalApr: [StrategyHistoricalApr!] @derivedFrom(field: "strategy")
 }
 
 type StrategyReport @entity {
@@ -428,4 +429,48 @@ type VaultDayData @entity {
   # tokenPriceUSDC: BigInt!
   "Block number the day data aggregation occured on"
   blockNumber: BigInt!
+}
+
+type Accountant @entity {
+  id: ID!
+  "time in UTC"
+  timestamp: BigInt!
+  "The total fees in BPS"
+  performanceFee: BigInt!
+  "The recipient of the fees"
+  feeRecipient: Bytes!
+}
+
+type Factory @entity {
+  id: ID!
+  "time in UTC"
+  timestamp: BigInt!
+  "The amount of performance fees that goes to the protocol in BPS"
+  protocolFee: Int!
+  "The recipient of the fees"
+  feeRecipient: Bytes!
+  "The current Vault implementation"
+  vaultPackage: Bytes!
+  "List of all vaults created by this factory"
+  vaults: [Bytes!]!
+}
+
+type VaultHistoricalApr @entity {
+  id: ID!
+  "time in UTC"
+  timestamp: BigInt!
+  "The Annual Percentage Rate"
+  apr: BigDecimal!
+  "The Vault"
+  vault: Vault!
+}
+
+type StrategyHistoricalApr @entity {
+  id: ID!
+  "time in UTC"
+  timestamp: BigInt!
+  "The Annual Percentage Rate"
+  apr: BigDecimal!
+  "The Strategy"
+  strategy: Strategy!
 }

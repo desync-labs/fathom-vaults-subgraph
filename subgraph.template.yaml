@@ -5,12 +5,63 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
+    name: Factory
+    network: mainnet
+    source:
+      abi: FactoryPackage
+      address: "{{Factory}}"
+      startBlock: {{blockNumber}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: ./src/mappings/factoryMappings.ts
+      entities:
+        - Transaction
+        - Vault
+        - Factory
+      abis:
+        - name: FactoryPackage
+          file: ./abis/FactoryPackage.json
+        - name: VaultPackage
+          file: ./abis/VaultPackage.json
+      eventHandlers:
+        - event: VaultPackageUpdated(indexed address)
+          handler: handleVaultPackageUpdated
+        - event: FeeConfigUpdated(indexed address,uint16)
+          handler: handleFeeConfigUpdated
+        - event: VaultDeployed(indexed address,uint32,indexed address,string,string,indexed address,address)
+          handler: handleVaultDeployed
+  - kind: ethereum/contract
+    name: Accountant
+    network: mainnet
+    source:
+      abi: GenericAccountant
+      address: "{{Accountant}}"
+      startBlock: {{blockNumber}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.3
+      language: wasm/assemblyscript
+      file: ./src/mappings/accountantMappings.ts
+      entities:
+        - Transaction
+        - Accountant
+      abis:
+        - name: GenericAccountant
+          file: ./abis/GenericAccountant.json
+      eventHandlers:
+        - event: PerformanceFeeSet(uint256)
+          handler: handlePerformanceFeeSet
+        - event: FeeRecipientSet(address)
+          handler: handleFeeRecipientSet
+
+templates:
+  - kind: ethereum/contract
     name: FathomVault
     network: mainnet
     source:
       abi: VaultPackage
-      address: "{{FathomVault}}"
-      startBlock: {{blockNumber}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.3
@@ -45,8 +96,6 @@ dataSources:
           handler: handleUpdatedMaxDebtForStrategy
         - event: DebtUpdated(indexed address,uint256,uint256)
           handler: handleDebtUpdated
-        - event: UpdatedFees(uint256,uint256,uint256,address)
-          handler: handleUpdatedFees
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
         - event: Deposit(indexed address,indexed address,uint256,uint256)
@@ -71,58 +120,3 @@ dataSources:
           handler: handleUpdatedMinimumTotalIdle
         - event: UpdatedProfitMaxUnlockTime(uint256)
           handler: handleUpdatedProfitMaxUnlockTime
-
-templates:
-  - kind: ethereum/contract
-    name: FathomVault
-    network: mainnet
-    source:
-      abi: VaultPackage
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.3
-      language: wasm/assemblyscript
-      file: ./src/mappings/vaultMappings.ts
-      entities:
-        - Transaction
-        - Token
-        - Vault
-        - VaultUpdate
-        - Account
-        - Deposit
-        - Withdraw
-        - Transfer
-        - AccountVaultPosition
-        - AccountVaultPositionUpdate
-        - Strategy
-        - StrategyReport
-        - StrategyReportResult
-        - VaultDayData
-      abis:
-        - name: VaultPackage
-          file: ./abis/VaultPackage.json
-      eventHandlers:
-        - event: DebtUpdated(indexed address,uint256,uint256)
-          handler: handleDebtUpdated
-        - event: UpdatedAccountant(address)
-          handler: handleUpdatedAccountant
-        - event: UpdatedDefaultQueue(address[])
-          handler: handleUpdatedDefaultQueue
-        - event: UpdatedUseDefaultQueue(bool)
-          handler: handleUpdatedUseDefaultQueue
-        - event: UpdatedMaxDebtForStrategy(indexed address,indexed address,uint256)
-          handler: handleUpdatedMaxDebtForStrategy
-        - event: UpdatedDepositLimit(uint256)
-          handler: handleUpdatedDepositLimit
-        - event: UpdatedMinimumTotalIdle(uint256)
-          handler: handleUpdatedMinimumTotalIdle
-        - event: UpdatedProfitMaxUnlockTime(uint256)
-          handler: handleUpdatedProfitMaxUnlockTime
-        - event: DebtPurchased(indexed address,uint256)
-          handler: handleDebtPurchased
-        - event: Shutdown()
-          handler: handleShutdown
-        - event: UpdatedDepositLimitModule(address)
-          handler: handleUpdatedDepositLimitModule
-        - event: UpdatedWithdrawLimitModule(address)
-          handler: handleUpdatedWithdrawLimitModule

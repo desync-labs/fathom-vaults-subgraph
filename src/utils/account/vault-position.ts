@@ -7,7 +7,7 @@ import {
   Transaction,
   Vault,
 } from '../../../generated/schema';
-import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
+import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import * as vaultPositionUpdateLibrary from './vault-position-update';
 import { BIGINT_ZERO, ZERO_ADDRESS } from '../constants';
 
@@ -60,13 +60,11 @@ export function getOrCreate(
 
 export function getBalancePosition(
   account: Account,
-  vaultContract: VaultPackage,
-  sharesManager: Address
+  vaultContract: VaultPackage
 ): BigInt {
   log.info('[VaultPosition] GetBalancePosition account  {} ', [account.id]);
   let pricePerShare = vaultContract.pricePerShare();
-  let sharesManagerContract = VaultPackage.bind(sharesManager);
-  let decimals = sharesManagerContract.decimals();
+  let decimals = vaultContract.decimals();
   // (vault.balanceOf(account) * (vault.pricePerShare() / 10**vault.decimals()))
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -112,9 +110,12 @@ function getBalanceProfit(
     if (withdrawAmount.gt(currentAmount)) {
       // User has profits.
       return currentProfit.plus(withdrawAmount.minus(currentAmount));
-    } else {
+    } else if (withdrawAmount.lt(currentAmount)) {
       // User has losses.
       return currentProfit.minus(currentAmount.minus(withdrawAmount));
+    } else {
+      // User has no profits or losses.
+      return currentProfit;
     }
   }
   // User still have shares, so we returns the current profit.
@@ -123,7 +124,6 @@ function getBalanceProfit(
 
 export function deposit(
   vaultContract: VaultPackage,
-  sharesManager: Address,
   account: Account,
   vault: Vault,
   transaction: Transaction,
@@ -139,7 +139,7 @@ export function deposit(
   // TODO Use tokenLibrary.getOrCreate
   let token = Token.load(vault.token) as Token;
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(account, vaultContract, sharesManager);
+  let balancePosition = getBalancePosition(account, vaultContract);
   if (accountVaultPosition == null) {
     log.info('Tx: {} Account vault position {} not found. Creating it.', [
       txHash,
@@ -165,30 +165,53 @@ export function deposit(
       balanceShares,
       balancePosition
     );
+
+    accountVaultPosition.balancePosition = balancePosition;
+    accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id;
+    accountVaultPosition.save();
   } else {
     log.info('Tx: {} Account vault position {} found. Using it.', [
       txHash,
       vaultPositionId,
     ]);
-    accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(
-      depositedTokens
-    );
-    accountVaultPosition.balanceShares = balanceShares;
-    accountVaultPositionUpdate = vaultPositionUpdateLibrary.deposit(
-      account,
-      vault,
-      vaultPositionId,
-      accountVaultPosition.latestUpdate,
-      transaction,
-      depositedTokens,
-      receivedShares,
-      balanceShares,
-      balancePosition
-    );
+
+    // Assuming accountVaultPosition.latestUpdate is a string of concatenated hashes separated by '-'
+    let updatesParts = accountVaultPosition.latestUpdate.split('-');
+    let thirdElementOfUpdate: string | null;
+
+    // Check if the updatesParts array has more than two elements
+    if (updatesParts.length > 2) {
+      thirdElementOfUpdate = updatesParts[2]; // Get the third element
+    } else {
+      thirdElementOfUpdate = null; // Set to null if there aren't enough parts
+    }
+
+    // AssemblyScript does not handle 'null' the same way, so we check for null before proceeding
+    if (thirdElementOfUpdate != null && thirdElementOfUpdate != txHash) {
+      // If they are different, proceed with updating the accountVaultPosition
+      accountVaultPosition.balanceTokens = accountVaultPosition.balanceTokens.plus(depositedTokens);
+      accountVaultPosition.balanceShares = balanceShares;
+      accountVaultPositionUpdate = vaultPositionUpdateLibrary.deposit(
+        account,
+        vault,
+        vaultPositionId,
+        accountVaultPosition.latestUpdate,
+        transaction,
+        depositedTokens,
+        receivedShares,
+        balanceShares,
+        balancePosition
+      );
+
+      accountVaultPosition.balancePosition = balancePosition;
+      accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id;
+      accountVaultPosition.save();
+
+    } else {
+      // If they are the same, log the event and do not update
+      log.info('Tx: {} has already been processed. Skipping.', [txHash]);
+    }
   }
-  accountVaultPosition.balancePosition = balancePosition;
-  accountVaultPosition.latestUpdate = accountVaultPositionUpdate.id;
-  accountVaultPosition.save();
 
   return VaultPositionResponse.fromValue(
     accountVaultPosition as AccountVaultPosition,
@@ -198,59 +221,83 @@ export function deposit(
 
 export function withdraw(
   vaultContract: VaultPackage,
-  sharesManager: Address,
   accountVaultPosition: AccountVaultPosition,
   withdrawnAmount: BigInt,
   sharesBurnt: BigInt,
   transaction: Transaction
-): AccountVaultPositionUpdate {
+): AccountVaultPositionUpdate | null {
+  let txHash = transaction.hash.toHexString();
   let account = Account.load(accountVaultPosition.account) as Account;
   let vault = Vault.load(accountVaultPosition.vault) as Vault;
   let token = Token.load(vault.token) as Token;
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(account, vaultContract, sharesManager);
+  let balancePosition = getBalancePosition(account, vaultContract);
   let newAccountVaultPositionOrder = vaultPositionUpdateLibrary.getNewOrder(
     accountVaultPosition.latestUpdate,
     transaction.hash.toHexString()
   );
-
+  let newAccountVaultPositionUpdate: AccountVaultPositionUpdate | null;
   let accountVaultPositionUpdateId = vaultPositionUpdateLibrary.buildIdFromAccountVaultAndOrder(
     account,
     vault,
+    transaction.hash.toHexString(),
     newAccountVaultPositionOrder
   );
-  let newAccountVaultPositionUpdate = vaultPositionUpdateLibrary.createAccountVaultPositionUpdate(
-    accountVaultPositionUpdateId,
-    newAccountVaultPositionOrder,
-    account,
-    vault,
-    accountVaultPosition.id,
-    transaction,
-    BIGINT_ZERO, // deposits
-    withdrawnAmount,
-    BIGINT_ZERO, // sharesMinted
-    sharesBurnt,
-    BIGINT_ZERO, // sharesSent
-    BIGINT_ZERO, // sharesReceived
-    BIGINT_ZERO, // tokensSent
-    BIGINT_ZERO, // tokensReceived,
-    balanceShares,
-    balancePosition
-  );
-  accountVaultPosition.balanceShares = balanceShares;
-  accountVaultPosition.balanceProfit = getBalanceProfit(
-    accountVaultPosition.balanceShares,
-    accountVaultPosition.balanceProfit,
-    accountVaultPosition.balanceTokens,
-    withdrawnAmount
-  );
-  accountVaultPosition.balanceTokens = getBalanceTokens(
-    accountVaultPosition.balanceTokens,
-    withdrawnAmount
-  );
-  accountVaultPosition.balancePosition = balancePosition;
-  accountVaultPosition.latestUpdate = newAccountVaultPositionUpdate.id;
-  accountVaultPosition.save();
+
+  // Assuming accountVaultPosition.latestUpdate is a string of concatenated hashes separated by '-'
+  let updatesParts = accountVaultPosition.latestUpdate.split('-');
+  let thirdElementOfUpdate: string | null;
+
+  // Check if the updatesParts array has more than two elements
+  if (updatesParts.length > 2) {
+    thirdElementOfUpdate = updatesParts[2]; // Get the third element
+  } else {
+    thirdElementOfUpdate = null; // Set to null if there aren't enough parts
+  }
+
+  // AssemblyScript does not handle 'null' the same way, so we check for null before proceeding
+  if (thirdElementOfUpdate != null && thirdElementOfUpdate != txHash) {
+    // If they are different, proceed with updating the accountVaultPosition
+    newAccountVaultPositionUpdate = vaultPositionUpdateLibrary.createAccountVaultPositionUpdate(
+      accountVaultPositionUpdateId,
+      newAccountVaultPositionOrder,
+      account,
+      vault,
+      accountVaultPosition.id,
+      transaction,
+      BIGINT_ZERO, // deposits
+      withdrawnAmount,
+      BIGINT_ZERO, // sharesMinted
+      sharesBurnt,
+      BIGINT_ZERO, // sharesSent
+      BIGINT_ZERO, // sharesReceived
+      BIGINT_ZERO, // tokensSent
+      BIGINT_ZERO, // tokensReceived,
+      balanceShares,
+      balancePosition
+    );
+    accountVaultPosition.balanceShares = balanceShares;
+    accountVaultPosition.balanceTokens = getBalanceTokens(
+      accountVaultPosition.balanceTokens,
+      withdrawnAmount
+    );
+    accountVaultPosition.balanceProfit = getBalanceProfit(
+      accountVaultPosition.balanceShares,
+      accountVaultPosition.balanceProfit,
+      accountVaultPosition.balanceTokens,
+      withdrawnAmount
+    );
+    accountVaultPosition.balancePosition = balancePosition;
+    accountVaultPosition.latestUpdate = newAccountVaultPositionUpdate.id;
+    accountVaultPosition.save();
+
+  } else {
+    // If they are the same, log the event and do not update
+    log.info('Tx: {} has already been processed. Skipping.', [txHash]);
+    newAccountVaultPositionUpdate = AccountVaultPositionUpdate.load(accountVaultPositionUpdateId);
+  }
+
+  
   return newAccountVaultPositionUpdate;
 }
 
@@ -263,6 +310,7 @@ export function withdrawZero(
   let accountVaultPositionUpdateId = vaultPositionUpdateLibrary.buildIdFromAccountVaultAndOrder(
     account,
     vault,
+    transaction.hash.toHexString(),
     newAccountVaultPositionOrder
   );
   let accountVaultPosition = getOrCreate(
@@ -299,7 +347,6 @@ export function withdrawZero(
 
 export function transferForAccount(
   vaultContract: VaultPackage,
-  sharesManager: Address,
   account: Account,
   vault: Vault,
   receivingTransfer: boolean,
@@ -310,7 +357,7 @@ export function transferForAccount(
   let accountVaultPositionId = buildId(account, vault);
   let accountVaultPosition = AccountVaultPosition.load(accountVaultPositionId);
   let balanceShares = vaultContract.balanceOf(Address.fromString(account.id));
-  let balancePosition = getBalancePosition(account, vaultContract, sharesManager);
+  let balancePosition = getBalancePosition(account, vaultContract);
   let latestUpdateId: string;
   let newAccountVaultPositionOrder: BigInt;
   if (accountVaultPosition == null) {
@@ -351,6 +398,7 @@ export function transferForAccount(
   latestUpdateId = vaultPositionUpdateLibrary.buildIdFromAccountVaultAndOrder(
     account,
     vault,
+    transaction.hash.toHexString(),
     newAccountVaultPositionOrder
   );
   vaultPositionUpdateLibrary.createAccountVaultPositionUpdate(
@@ -403,7 +451,6 @@ export function transferForAccount(
 
 export function transfer(
   vaultContract: VaultPackage,
-  sharesManager: Address,
   fromAccount: Account,
   toAccount: Account,
   vault: Vault,
@@ -420,7 +467,6 @@ export function transfer(
 
   transferForAccount(
     vaultContract,
-    sharesManager,
     fromAccount,
     vault,
     false,
@@ -431,7 +477,6 @@ export function transfer(
 
   transferForAccount(
     vaultContract,
-    sharesManager,
     toAccount,
     vault,
     true,

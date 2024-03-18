@@ -1,13 +1,13 @@
-import { log, ethereum, BigInt, Address, Bytes } from '@graphprotocol/graph-ts';
+import { log, ethereum, BigInt, Address, Bytes, BigDecimal, store } from '@graphprotocol/graph-ts';
 import {
   Strategy,
   StrategyReport,
   Transaction,
   Vault,
 } from '../../../generated/schema';
-import { VaultPackage } from '../../../generated/FathomVault/VaultPackage';
+import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import { booleanToString, getTimeInMillis } from '../commons';
-import { BIGINT_ZERO } from '../constants';
+import { BIGINT_ZERO, BIGDECIMAL_ZERO } from '../constants';
 import * as strategyReportLibrary from './strategy-report';
 import * as strategyReportResultLibrary from './strategy-report-result';
 
@@ -44,6 +44,8 @@ export function createAndGet(
     strategy.maxDebt = maxDebt;
     strategy.delegatedAssets = BigInt.fromI32(0);
     strategy.inQueue = true;
+    strategy.reportsCount = BIGDECIMAL_ZERO;
+    strategy.apr = BIGDECIMAL_ZERO;
 
     strategy.save();
 
@@ -60,6 +62,10 @@ export function createAndGet(
       vaultInstance.strategyIds = strategyIds;
       vaultInstance.save();
     }
+  } else {
+    log.info('[Strategy] Strategy {} already exists', [strategyId]);
+    strategy.vault = vault.toHexString();
+    strategy.save();
   }
   return strategy as Strategy;
 }
@@ -84,41 +90,50 @@ export function createReport(
       '[Strategy] Getting current report {} for strategy {}. TxHash: {}',
       [currentReportId ? currentReportId : 'null', strategy.id, txHash]
     );
-    let latestReport = strategyReportLibrary.getOrCreate(
-      transaction.id,
-      strategy as Strategy,
-      gain,
-      loss,
-      currentDebt,
-      protocolFees,
-      totalFees,
-      totalRefunds,
-      event
-    );
-    strategy.latestReport = latestReport.id;
-    strategy.save();
+    if (gain > BIGINT_ZERO || loss < BIGINT_ZERO) {
+      log.info(
+        '[Strategy] Create new report for strategy {}. TxHash: {}',
+        [strategy.id, txHash]
+      );
+      let latestReport = strategyReportLibrary.getOrCreate(
+        transaction.id,
+        strategy as Strategy,
+        gain,
+        loss,
+        currentDebt,
+        protocolFees,
+        totalFees,
+        totalRefunds,
+        event
+      );
+      strategy.latestReport = latestReport.id;
+      strategy.save();
 
-    // Getting latest report to compare to the new one and create a new report result.
-    if (currentReportId !== null) {
-      let currentReport = StrategyReport.load(currentReportId);
-      if (currentReport !== null) {
-        log.info(
-          '[Strategy] Create report result (latest {} vs current {}) for strategy {}. TxHash: {}',
-          [latestReport.id, currentReport.id, strategyId, txHash]
-        );
-        strategyReportResultLibrary.create(
-          transaction,
-          currentReport as StrategyReport,
-          latestReport
-        );
-      }
+      // Getting latest report to compare to the new one and create a new report result.
+      if (currentReportId !== null) {
+        let currentReport = StrategyReport.load(currentReportId);
+        if (currentReport !== null) {
+          log.info(
+            '[Strategy] Create report result (latest {} vs current {}) for strategy {}. TxHash: {}',
+            [latestReport.id, currentReport.id, strategyId, txHash]
+          );
+          strategyReportResultLibrary.create(
+            transaction,
+            currentReport as StrategyReport,
+            latestReport
+          );
+        }
       } else {
         log.info(
           '[Strategy] Report result NOT created. Only one report created {} for strategy {}. TxHash: {}',
           [latestReport.id, strategyId, txHash]
         );
       }
-    return latestReport;
+      return latestReport;
+    } else {
+      return null;
+    }
+
   } else {
     log.warning(
       '[Strategy] Failed to load strategy {} while handling StrategyReport',
@@ -173,48 +188,48 @@ export function updateDebt(
 }
 
 export function updateMaxDebt(
-    vaultAddress: Address,
-    strategyAddress: Address,
-    newDebt: BigInt,
-    transaction: Transaction
-  ): void {
-    let strategyId = buildId(strategyAddress);
-    let txHash = transaction.hash.toHexString();
-    log.info(
-      '[Strategy Mapping] Update Max Debt for strategy {} tx {}',
+  vaultAddress: Address,
+  strategyAddress: Address,
+  newDebt: BigInt,
+  transaction: Transaction
+): void {
+  let strategyId = buildId(strategyAddress);
+  let txHash = transaction.hash.toHexString();
+  log.info(
+    '[Strategy Mapping] Update Max Debt for strategy {} tx {}',
+    [strategyId, txHash]
+  );
+
+  let vaultId = vaultAddress.toHexString();
+  let vault = Vault.load(vaultId);
+  if (!vault) {
+    log.critical(
+      '[Strategy Mapping] Vault entity does not exist: {} updateMaxDebt tx {}',
+      [vaultId, txHash]
+    );
+    return;
+  }
+
+  let strategy = Strategy.load(strategyId);
+  if (!strategy) {
+    log.critical(
+      '[Strategy Mapping] Strategy entity does not exist: {} updateMaxDebt tx {}',
       [strategyId, txHash]
     );
-  
-    let vaultId = vaultAddress.toHexString();
-    let vault = Vault.load(vaultId);
-    if (!vault) {
-      log.critical(
-        '[Strategy Mapping] Vault entity does not exist: {} updateMaxDebt tx {}',
-        [vaultId, txHash]
-      );
-      return;
-    }
-  
-    let strategy = Strategy.load(strategyId);
-    if (!strategy) {
-      log.critical(
-        '[Strategy Mapping] Strategy entity does not exist: {} updateMaxDebt tx {}',
-        [strategyId, txHash]
-      );
-      return;
-    }
-  
-    if (strategy.vault != vaultId) {
-      log.critical(
-        '[Strategy Mapping] Strategy entity {} is not linked to this vault: {} tx: {}',
-        [strategyId, vaultId, txHash]
-      );
-      return;
-    }
-  
-    strategy.maxDebt = newDebt;
-    strategy.save();
+    return;
   }
+
+  if (strategy.vault != vaultId) {
+    log.critical(
+      '[Strategy Mapping] Strategy entity {} is not linked to this vault: {} tx: {}',
+      [strategyId, vaultId, txHash]
+    );
+    return;
+  }
+
+  strategy.maxDebt = newDebt;
+  strategy.save();
+}
 
 export function updateDebtPurchased(
   vaultAddress: Address,
@@ -260,5 +275,69 @@ export function updateDebtPurchased(
   vault.totalDebt = vault.totalDebt.minus(amount);
   vault.totalIdle = vault.totalIdle.plus(amount);
   strategy.save();
+  vault.save();
+}
+
+export function remove(
+  strategyAddress: Address,
+  vaultAddress: Address,
+  transaction: Transaction
+): void {
+  let strategyId = buildId(strategyAddress);
+  let txHash = transaction.hash.toHexString();
+  log.info(
+    '[Strategy Mapping] Remove strategy {} from vault {} tx {}',
+    [strategyId, vaultAddress.toHexString(), txHash]
+  );
+
+  let vaultId = vaultAddress.toHexString();
+  let vault = Vault.load(vaultId);
+  if (!vault) {
+    log.critical(
+      '[Strategy Mapping] Vault entity does not exist: {} remove strategy tx {}',
+      [vaultId, txHash]
+    );
+    return;
+  }
+
+  let strategy = Strategy.load(strategyId);
+  if (!strategy) {
+    log.critical(
+      '[Strategy Mapping] Strategy entity does not exist: {} remove strategy tx {}',
+      [strategyId, txHash]
+    );
+    return;
+  }
+
+  if (strategy.vault != vaultId) {
+    log.critical(
+      '[Strategy Mapping] Strategy entity {} is not linked to this vault: {} tx: {}',
+      [strategyId, vaultId, txHash]
+    );
+    return;
+  }
+
+  let withdrawlQueue = vault.defaultQueue;
+  let newQueue: string[] = [];
+  for (let i = 0; i < withdrawlQueue.length; i++) {
+    if (withdrawlQueue[i] != strategyId) {
+      newQueue.push(withdrawlQueue[i]);
+    }
+  }
+  vault.defaultQueue = newQueue;
+
+  // Remove strategy from vault
+  let strategyIds = vault.strategyIds;
+  let newStrategyIds: string[] = [];
+  for (let i = 0; i < strategyIds.length; i++) {
+    if (strategyIds[i] != strategyId) {
+      newStrategyIds.push(strategyIds[i]);
+    }
+  }
+
+  strategy.vault = '';
+  strategy.save();
+
+  vault.strategyIds = newStrategyIds;
   vault.save();
 }
