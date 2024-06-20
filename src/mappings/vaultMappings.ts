@@ -3,6 +3,7 @@ import {
   DebtPurchased,
   DebtUpdated,
   UpdatedDepositLimit,
+  UpdatedMinUserDeposit,
   StrategyChanged,
   StrategyReported,
   UpdatedMaxDebtForStrategy,
@@ -72,6 +73,20 @@ export function handleUpdatedDepositLimit(event: UpdatedDepositLimit): void {
     ethTransaction
   );
 }
+
+export function handleUpdatedMinUserDeposit(event: UpdatedMinUserDeposit): void {
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdatedMinUserDeposit'
+  );
+
+  vaultLibrary.updateMinUserDeposit(
+    event.address,
+    event.params.minUserDeposit,
+    ethTransaction
+  );
+}
+
 
 // Strategy management
 

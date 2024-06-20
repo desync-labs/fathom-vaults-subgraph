@@ -50,6 +50,7 @@ function createVaultUpdate(
   feesPaid: BigInt | null,
   newProtocolFee: BigInt | null,
   depositLimit: BigInt,
+  minUserDeposit: BigInt,
   accountant: Bytes,
   depositLimitModule: Bytes,
   withdrawLimitModule: Bytes,
@@ -85,6 +86,7 @@ function createVaultUpdate(
   if (vault.latestUpdate == null || secondElementOfUpdate != null && secondElementOfUpdate != transaction.hash.toHexString()) {
     // If they are different, proceed with updating the accountVaultPosition
     vaultUpdate.depositLimit = depositLimit;
+    vaultUpdate.minUserDeposit = minUserDeposit;
     vaultUpdate.newProtocolFee = newProtocolFee;
   
     // Balances & Shares
@@ -202,6 +204,7 @@ export function firstDeposit(
       null, // totalFees
       null, // newProtocolFee
       vault.depositLimit,
+      vault.minUserDeposit,
       vault.accountant,
       vault.depositLimitModule,
       vault.withdrawLimitModule,
@@ -247,6 +250,7 @@ export function deposit(
       null, // totalFees
       null, // newProtocolFee
       vault.depositLimit,
+      vault.minUserDeposit,
       vault.accountant,
       vault.depositLimitModule,
       vault.withdrawLimitModule,
@@ -291,6 +295,7 @@ export function withdraw(
       null, // totalFees
       null, // newProtocolFee
       vault.depositLimit,
+      vault.minUserDeposit,
       vault.accountant,
       vault.depositLimitModule,
       vault.withdrawLimitModule,
@@ -343,6 +348,7 @@ export function strategyReported(
       feesPaidDuringReport,
       null,
       vault.depositLimit,
+      vault.minUserDeposit,
       vault.accountant,
       vault.depositLimitModule,
       vault.withdrawLimitModule,
