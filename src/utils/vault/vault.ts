@@ -69,6 +69,8 @@ const createNewVaultFromAddress = (
   vaultEntity.depositLimit = tryDepositLimit.reverted
     ? BIGINT_ZERO
     : tryDepositLimit.value;
+  // on creation it's 0
+  vaultEntity.minUserDeposit = BIGINT_ZERO;
 
   vaultEntity.shutdown = false;
 
@@ -580,6 +582,36 @@ export function updateDepositLimit(
   }
 }
 
+export function updateMinUserDeposit(
+  vaultAddress: Address,
+  minUserDeposit: BigInt,
+  transaction: Transaction
+): void {
+  let vault = Vault.load(vaultAddress.toHexString());
+  if (vault === null) {
+    log.warning(
+      'Failed to update vault minUserDeposit, vault does not exist. Vault address: {} deposit limit: {}  Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        minUserDeposit.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+    return;
+  } else {
+    log.info(
+      'Vault minUserDeposit updated. Address: {}, To: {}, on Txn hash: {}',
+      [
+        vaultAddress.toHexString(),
+        minUserDeposit.toString(),
+        transaction.hash.toHexString(),
+      ]
+    );
+
+    vault.minUserDeposit = minUserDeposit;
+    vault.save();
+  }
+}
 export function updateMinimumTotalIdle(
   vaultAddress: Address,
   minimumTotalIdle: BigInt,

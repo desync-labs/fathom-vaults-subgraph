@@ -104,6 +104,8 @@ templates:
           handler: handleWithdraw
         - event: UpdatedDepositLimit(uint256)
           handler: handleUpdatedDepositLimit
+        - event: UpdatedMinUserDeposit(uint256)
+          handler: handleUpdatedMinUserDeposit
         - event: Shutdown()
           handler: handleShutdown
         - event: UpdatedDepositLimitModule(address)

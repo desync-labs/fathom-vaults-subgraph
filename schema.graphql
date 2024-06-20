@@ -100,6 +100,8 @@ type Vault @entity {
   withdrawLimitModule: Bytes!
   "The maximum amount of tokens that can be deposited in this Vault"
   depositLimit: BigInt!
+  "The minimum amount of tokens that can be deposited in this Vault by user"
+  minUserDeposit: BigInt!
   "Is vault in shutdown"
   shutdown: Boolean!
   "Block.timestamp of contract deployment"
@@ -155,6 +157,8 @@ type VaultUpdate @entity {
   newProtocolFee: BigInt
   "The maximum amount of tokens that can be deposited in this Vault"
   depositLimit: BigInt!
+  "The minimum amount of tokens that can be deposited in this Vault by user"
+  minUserDeposit: BigInt!
   ### MANAGEMENT
   "The address authorized for the Contract that charges fees and can give refunds."
   accountant: Bytes!
