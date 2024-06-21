@@ -48,6 +48,17 @@ export function createAndGet(
     strategy.reportsCount = BIGDECIMAL_ZERO;
     strategy.apr = BIGDECIMAL_ZERO;
 
+    let baseStrategy = BaseStrategy.bind(strategyAddress);
+    let metadata = baseStrategy.try_getMetadata();
+    if (!metadata.reverted) {
+      strategy.interfaceId = metadata.value.value0;
+      strategy.metadata = metadata.value.value1;
+    } else {
+      strategy.interfaceId = Bytes.fromHexString('0x00') as Bytes;
+      strategy.metadata = Bytes.fromHexString('0x00') as Bytes;
+    }
+
+
     strategy.save();
 
     let vaultInstance = Vault.load(vault.toHexString());
@@ -62,12 +73,6 @@ export function createAndGet(
       strategyIds.push(strategyId);
       vaultInstance.strategyIds = strategyIds;
       vaultInstance.save();
-    }
-    let baseStrategy = BaseStrategy.bind(strategyAddress);
-    let metadata = baseStrategy.try_getMetadata();
-    if (!metadata.reverted) {
-      strategy.interfaceId = metadata.value.value0;
-      strategy.metadata = metadata.value.value1;
     }
   } else {
     log.info('[Strategy] Strategy {} already exists', [strategyId]);
