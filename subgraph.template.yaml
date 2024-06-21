@@ -85,6 +85,8 @@ templates:
       abis:
         - name: VaultPackage
           file: ./abis/VaultPackage.json
+        - name: BaseStrategy
+          file: ./abis/IBaseStrategy.json
       eventHandlers:
         - event: DebtPurchased(indexed address,uint256)
           handler: handleDebtPurchased
