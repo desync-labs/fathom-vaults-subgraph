@@ -15,7 +15,7 @@
 
     "create:k8s:apothem": "graph create --node http://apothem-graph-node-service:8020/ vaults-subgraph",
     "remove:k8s:apothem": "graph remove --node http://apothem-graph-node-service:8020/ vaults-subgraph",
-    "deploy:k8s:apothem": "graph deploy --node http://apothem-graph-node-service:8020/ --ipfs http://ipfs-service:5001  vaults-subgraph subgraph.yaml",
+    "deploy:k8s:apothem": "graph deploy --node http://apothem-graph-node-service:8020/ --ipfs http://ipfs-service:5001 --version-label v0.0.1 vaults-subgraph",
     
     "prep:addresses:apothem:dev": "ts-node config/apothemAddressScript.ts dev && mustache ./config/generatedAddresses.json ./config/addresses.template.ts > ./config/addresses.ts",
     "prep:apothem:dev": "yarn clean && yarn prep:addresses:apothem:dev && mustache ./config/generatedAddresses.json subgraph.template.yaml > subgraph.yaml && graph codegen && graph build",
