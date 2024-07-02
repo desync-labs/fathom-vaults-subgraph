@@ -102,50 +102,45 @@ export function createReport(
       '[Strategy] Getting current report {} for strategy {}. TxHash: {}',
       [currentReportId ? currentReportId : 'null', strategy.id, txHash]
     );
-    if (gain > BIGINT_ZERO || loss < BIGINT_ZERO) {
-      log.info(
-        '[Strategy] Create new report for strategy {}. TxHash: {}',
-        [strategy.id, txHash]
-      );
-      let latestReport = strategyReportLibrary.getOrCreate(
-        transaction.id,
-        strategy as Strategy,
-        gain,
-        loss,
-        currentDebt,
-        protocolFees,
-        totalFees,
-        totalRefunds,
-        event
-      );
-      strategy.latestReport = latestReport.id;
-      strategy.save();
+    log.info(
+      '[Strategy] Create new report for strategy {}. TxHash: {}',
+      [strategy.id, txHash]
+    );
+    let latestReport = strategyReportLibrary.getOrCreate(
+      transaction.id,
+      strategy as Strategy,
+      gain,
+      loss,
+      currentDebt,
+      protocolFees,
+      totalFees,
+      totalRefunds,
+      event
+    );
+    strategy.latestReport = latestReport.id;
+    strategy.save();
 
-      // Getting latest report to compare to the new one and create a new report result.
-      if (currentReportId !== null) {
-        let currentReport = StrategyReport.load(currentReportId);
-        if (currentReport !== null) {
-          log.info(
-            '[Strategy] Create report result (latest {} vs current {}) for strategy {}. TxHash: {}',
-            [latestReport.id, currentReport.id, strategyId, txHash]
-          );
-          strategyReportResultLibrary.create(
-            transaction,
-            currentReport as StrategyReport,
-            latestReport
-          );
-        }
-      } else {
+    // Getting latest report to compare to the new one and create a new report result.
+    if (currentReportId !== null) {
+      let currentReport = StrategyReport.load(currentReportId);
+      if (currentReport !== null) {
         log.info(
-          '[Strategy] Report result NOT created. Only one report created {} for strategy {}. TxHash: {}',
-          [latestReport.id, strategyId, txHash]
+          '[Strategy] Create report result (latest {} vs current {}) for strategy {}. TxHash: {}',
+          [latestReport.id, currentReport.id, strategyId, txHash]
+        );
+        strategyReportResultLibrary.create(
+          transaction,
+          currentReport as StrategyReport,
+          latestReport
         );
       }
-      return latestReport;
     } else {
-      return null;
+      log.info(
+        '[Strategy] Report result NOT created. Only one report created {} for strategy {}. TxHash: {}',
+        [latestReport.id, strategyId, txHash]
+      );
     }
-
+    return latestReport;
   } else {
     log.warning(
       '[Strategy] Failed to load strategy {} while handling StrategyReport',
