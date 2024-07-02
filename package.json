@@ -13,8 +13,8 @@
     "remove:local": "graph remove --node http://localhost:8020/ vaults-subgraph subgraph.yaml",
     "deploy:local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001  vaults-subgraph subgraph.yaml",
 
-    "create:k8s:apothem": "graph create --node http://apothem-graph-node-service:8020/ vaults-subgraph subgraph.yaml",
-    "remove:k8s:apothem": "graph remove --node http://apothem-graph-node-service:8020/ vaults-subgraph subgraph.yaml",
+    "create:k8s:apothem": "graph create --node http://apothem-graph-node-service:8020/ vaults-subgraph",
+    "remove:k8s:apothem": "graph remove --node http://apothem-graph-node-service:8020/ vaults-subgraph",
     "deploy:k8s:apothem": "graph deploy --node http://apothem-graph-node-service:8020/ --ipfs http://ipfs-service:5001  vaults-subgraph subgraph.yaml",
     
     "prep:addresses:apothem:dev": "ts-node config/apothemAddressScript.ts dev && mustache ./config/generatedAddresses.json ./config/addresses.template.ts > ./config/addresses.ts",
