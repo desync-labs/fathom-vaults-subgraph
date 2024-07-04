@@ -85,6 +85,8 @@ templates:
       abis:
         - name: VaultPackage
           file: ./abis/VaultPackage.json
+        - name: BaseStrategy
+          file: ./abis/IBaseStrategy.json
       eventHandlers:
         - event: DebtPurchased(indexed address,uint256)
           handler: handleDebtPurchased
@@ -104,6 +106,8 @@ templates:
           handler: handleWithdraw
         - event: UpdatedDepositLimit(uint256)
           handler: handleUpdatedDepositLimit
+        - event: UpdatedMinUserDeposit(uint256)
+          handler: handleUpdatedMinUserDeposit
         - event: Shutdown()
           handler: handleShutdown
         - event: UpdatedDepositLimitModule(address)

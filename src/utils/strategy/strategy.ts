@@ -6,6 +6,7 @@ import {
   Vault,
 } from '../../../generated/schema';
 import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
+import { BaseStrategy } from '../../../generated/templates/FathomVault/BaseStrategy';
 import { booleanToString, getTimeInMillis } from '../commons';
 import { BIGINT_ZERO, BIGDECIMAL_ZERO } from '../constants';
 import * as strategyReportLibrary from './strategy-report';
@@ -46,6 +47,17 @@ export function createAndGet(
     strategy.inQueue = true;
     strategy.reportsCount = BIGDECIMAL_ZERO;
     strategy.apr = BIGDECIMAL_ZERO;
+
+    let baseStrategy = BaseStrategy.bind(strategyAddress);
+    let metadata = baseStrategy.try_getMetadata();
+    if (!metadata.reverted) {
+      strategy.interfaceId = metadata.value.value0;
+      strategy.metadata = metadata.value.value1;
+    } else {
+      strategy.interfaceId = Bytes.fromHexString('0x00') as Bytes;
+      strategy.metadata = Bytes.fromHexString('0x00') as Bytes;
+    }
+
 
     strategy.save();
 
