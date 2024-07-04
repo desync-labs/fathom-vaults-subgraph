@@ -4,8 +4,8 @@ import * as networkAddresses from '../networks/addresses.json';
 import { Addresses } from './addresses.template';
 
 // Change the NETWORK_ID and NETWORK_NAME to the appropriate values
-const NETWORK_ID = '50';
-const NETWORK_NAME = 'xinfin';
+const NETWORK_ID = '11155111';
+const NETWORK_NAME = 'sepolia';
 
 // mustache doesn't like numbered object keys
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
