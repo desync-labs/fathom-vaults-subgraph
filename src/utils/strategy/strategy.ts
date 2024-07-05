@@ -202,6 +202,8 @@ export function updateDebt(
   
   vault.apr = calculateVaultApr(vault!, id, transaction.timestamp);
   vault.save();
+
+  log.info("[Strategy Mapping] Updated debt and apr for strategy {} in vault {} tx {}", [strategyId, vaultId, txHash]);
 }
 
 export function updateMaxDebt(
