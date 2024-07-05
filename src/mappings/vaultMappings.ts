@@ -59,6 +59,8 @@ export function handleDebtUpdated(event: DebtUpdated): void {
     event.params.newDebt,
     ethTransaction
   );
+
+  vaultLibrary.updateVaultApr(event.address, ethTransaction);
 }
 
 export function handleUpdatedDepositLimit(event: UpdatedDepositLimit): void {
@@ -145,6 +147,8 @@ export function handleStrategyReported(event: StrategyReported): void {
     );
     return;
   }
+
+  vaultLibrary.updateVaultApr(vaultContractAddress, ethTransaction);
 
   log.info(
     '[Vault mappings] Updating price per share (strategy reported): {}',

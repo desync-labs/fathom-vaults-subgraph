@@ -24,6 +24,7 @@ import * as accountVaultPositionLibrary from '../account/vault-position';
 import * as vaultUpdateLibrary from './vault-update';
 import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
+import { buildIdFromTransaction } from '../commons';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -762,8 +763,17 @@ export function updateWithdrawLimitModule(
   }
 }
 
-export function calculateVaultApr(vault: Vault, logId: string, timestamp: BigInt) : BigDecimal {
+export function updateVaultApr(vaultAddress: Address, transaction: Transaction) : void {
   // for each strategy in the vault, calculate the apr and get the vault apr based on strategies allocation
+  let vault = Vault.load(vaultAddress.toHexString());
+  if (!vault) {
+    log.warning(
+      'Failed to update vault APR, vault does not exist. Vault address: {}',
+      [vaultAddress.toHexString()]
+    );
+    return;
+  }
+
   let strategies = vault.strategyIds;
   let totalApr = BIGDECIMAL_ZERO;
   for (let i = 0; i < strategies.length; i++) {
@@ -773,13 +783,14 @@ export function calculateVaultApr(vault: Vault, logId: string, timestamp: BigInt
     totalApr = totalApr.plus(strategyApr);
   }
 
-  log.info('[Vault] Calculated APR for vault {} at timestamp {} is {}', [vault.id, timestamp.toString(), totalApr.toString()]);
+  log.info('[Vault] Calculated APR for vault {} at timestamp {} is {}', [vault.id, transaction.timestamp.toString(), totalApr.toString()]);
 
-  let newVaultHistoricalApr = new VaultHistoricalApr(logId);
-  newVaultHistoricalApr.timestamp = timestamp;
+  vault.apr = totalApr;
+  vault.save();
+  
+  let newVaultHistoricalApr = new VaultHistoricalApr(buildIdFromTransaction(transaction));
+  newVaultHistoricalApr.timestamp = transaction.timestamp;
   newVaultHistoricalApr.apr = totalApr;
   newVaultHistoricalApr.vault = vault.id;
   newVaultHistoricalApr.save();
-
-  return totalApr;
 }

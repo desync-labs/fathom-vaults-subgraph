@@ -10,7 +10,6 @@ import {
 } from '../../../generated/schema';
 import { buildIdFromTransaction } from '../commons';
 import { BIGDECIMAL_ZERO, DAYS_PER_YEAR, MS_PER_DAY, BIGINT_ZERO } from '../constants';
-import { calculateVaultApr } from '../vault/vault';
 
 export function create(
   transaction: Transaction,
@@ -96,11 +95,6 @@ export function create(
     strategy.reportsCount = reportCount;
     strategy.save();
     strategyReportResult.save();
-
-    let vault = Vault.load(strategy.vault);
-    vault.apr = calculateVaultApr(vault!, id, transaction.timestamp);
-    vault.save();
-
     return strategyReportResult;
   }
 }
