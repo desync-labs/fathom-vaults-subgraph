@@ -765,6 +765,8 @@ export function updateWithdrawLimitModule(
 export function calculateVaultApr(vaultId: string, logId: string, timestamp: BigInt) : void {
   let vault = Vault.load(vaultId);
 
+  log.info('[Vault] Calculate APR for vault: {}', [vaultId]);
+
   // for each strategy in the vault, calculate the apr and get the vault apr based on strategies allocation
   let strategies = vault.strategyIds;
   let totalApr = BIGDECIMAL_ZERO;
