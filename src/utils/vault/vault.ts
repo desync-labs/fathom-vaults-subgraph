@@ -762,11 +762,7 @@ export function updateWithdrawLimitModule(
   }
 }
 
-export function calculateVaultApr(vaultId: string, logId: string, timestamp: BigInt) : void {
-  let vault = Vault.load(vaultId);
-
-  log.info('[Vault] Calculate APR for vault: {}', [vaultId]);
-
+export function calculateVaultApr(vault: Vault, logId: string, timestamp: BigInt) : BigDecimal {
   // for each strategy in the vault, calculate the apr and get the vault apr based on strategies allocation
   let strategies = vault.strategyIds;
   let totalApr = BIGDECIMAL_ZERO;
@@ -777,12 +773,13 @@ export function calculateVaultApr(vaultId: string, logId: string, timestamp: Big
     totalApr = totalApr.plus(strategyApr);
   }
 
-  vault.apr = totalApr;
-  vault.save();
+  log.info('[Vault] Calculated APR for vault {} at timestamp {} is {}', [vault.id, timestamp.toString(), totalApr.toString()]);
 
   let newVaultHistoricalApr = new VaultHistoricalApr(logId);
   newVaultHistoricalApr.timestamp = timestamp;
   newVaultHistoricalApr.apr = totalApr;
-  newVaultHistoricalApr.vault = vaultId;
+  newVaultHistoricalApr.vault = vault.id;
   newVaultHistoricalApr.save();
+
+  return totalApr;
 }

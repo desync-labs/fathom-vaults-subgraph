@@ -97,7 +97,9 @@ export function create(
     strategy.save();
     strategyReportResult.save();
 
-    calculateVaultApr(strategy.vault, id, currentReport.timestamp);
+    let vault = Vault.load(strategy.vault);
+    vault.apr = calculateVaultApr(vault!, id, transaction.timestamp);
+    vault.save();
 
     return strategyReportResult;
   }

@@ -199,7 +199,9 @@ export function updateDebt(
   strategy.save();
 
   let id = buildIdFromTransaction(transaction);
-  calculateVaultApr(vaultId, id, transaction.timestamp);
+  
+  vault.apr = calculateVaultApr(vault!, id, transaction.timestamp);
+  vault.save();
 }
 
 export function updateMaxDebt(
