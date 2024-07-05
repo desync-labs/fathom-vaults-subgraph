@@ -10,6 +10,7 @@ import {
 } from '../../../generated/schema';
 import { buildIdFromTransaction } from '../commons';
 import { BIGDECIMAL_ZERO, DAYS_PER_YEAR, MS_PER_DAY, BIGINT_ZERO } from '../constants';
+import { calculateVaultApr } from '../vault/vault';
 
 export function create(
   transaction: Transaction,
@@ -96,29 +97,8 @@ export function create(
     strategy.save();
     strategyReportResult.save();
 
-    let vault = Vault.load(strategy.vault);
-    vault.apr = calculateVaultApr(vault!);
-    vault.save();
+    calculateVaultApr(strategy.vault, id, currentReport.timestamp);
 
-    let newVaultHistoricalApr = new VaultHistoricalApr(id);
-    newVaultHistoricalApr.timestamp = currentReport.timestamp;
-    newVaultHistoricalApr.apr = vault.apr;
-    newVaultHistoricalApr.vault = vault.id;
-    newVaultHistoricalApr.save();
-  
     return strategyReportResult;
   }
-}
-
-function calculateVaultApr(vault: Vault): BigDecimal {
-  // for each strategy in the vault, calculate the apr and get the vault apr based on strategies allocation
-  let strategies = vault.strategyIds;
-  let totalApr = BIGDECIMAL_ZERO;
-  for (let i = 0; i < strategies.length; i++) {
-    let strategy = Strategy.load(strategies[i]);
-    let allocation = strategy.currentDebt.toBigDecimal().div(vault.balanceTokens.toBigDecimal());
-    let strategyApr = strategy.apr.times(allocation);
-    totalApr = totalApr.plus(strategyApr);
-  }
-  return totalApr;
 }

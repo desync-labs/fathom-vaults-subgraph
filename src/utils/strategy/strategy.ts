@@ -5,12 +5,12 @@ import {
   Transaction,
   Vault,
 } from '../../../generated/schema';
-import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import { BaseStrategy } from '../../../generated/templates/FathomVault/BaseStrategy';
-import { booleanToString, getTimeInMillis } from '../commons';
+import { buildIdFromTransaction, getTimeInMillis } from '../commons';
 import { BIGINT_ZERO, BIGDECIMAL_ZERO } from '../constants';
 import * as strategyReportLibrary from './strategy-report';
 import * as strategyReportResultLibrary from './strategy-report-result';
+import { calculateVaultApr } from '../vault/vault';
 
 export function buildId(strategyAddress: Address): string {
   return strategyAddress.toHexString();
@@ -197,6 +197,9 @@ export function updateDebt(
 
   strategy.currentDebt = newDebt;
   strategy.save();
+
+  let id = buildIdFromTransaction(transaction);
+  calculateVaultApr(strategy.vault, id, transaction.timestamp);
 }
 
 export function updateMaxDebt(

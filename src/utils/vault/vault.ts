@@ -1,4 +1,4 @@
-import { Address, ethereum, BigInt, log, Bytes } from '@graphprotocol/graph-ts';
+import { Address, ethereum, BigInt, log, BigDecimal } from '@graphprotocol/graph-ts';
 import {
   AccountVaultPosition,
   AccountVaultPositionUpdate,
@@ -7,12 +7,12 @@ import {
   Transaction,
   Vault,
   VaultUpdate,
+  VaultHistoricalApr
 } from '../../../generated/schema';
 import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import { FathomVault as VaultTemplate } from '../../../generated/templates';
 import {
   BIGINT_ZERO,
-  DO_CREATE_VAULT_TEMPLATE,
   ZERO_ADDRESS,
   BIGDECIMAL_ZERO
 } from '../constants';
@@ -24,8 +24,6 @@ import * as accountVaultPositionLibrary from '../account/vault-position';
 import * as vaultUpdateLibrary from './vault-update';
 import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
-import { updateVaultDayData } from './vault-day-data';
-import { booleanToString, removeElementFromArray } from '../commons';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -762,4 +760,27 @@ export function updateWithdrawLimitModule(
     vault.withdrawLimitModule = withdrawLimitModule;
     vault.save();
   }
+}
+
+export function calculateVaultApr(vaultId: string, logId: string, timestamp: BigInt) : void {
+  let vault = Vault.load(vaultId);
+
+  // for each strategy in the vault, calculate the apr and get the vault apr based on strategies allocation
+  let strategies = vault.strategyIds;
+  let totalApr = BIGDECIMAL_ZERO;
+  for (let i = 0; i < strategies.length; i++) {
+    let strategy = Strategy.load(strategies[i]);
+    let allocation = strategy.currentDebt.toBigDecimal().div(vault.balanceTokens.toBigDecimal());
+    let strategyApr = strategy.apr.times(allocation);
+    totalApr = totalApr.plus(strategyApr);
+  }
+
+  vault.apr = totalApr;
+  vault.save();
+
+  let newVaultHistoricalApr = new VaultHistoricalApr(logId);
+  newVaultHistoricalApr.timestamp = timestamp;
+  newVaultHistoricalApr.apr = totalApr;
+  newVaultHistoricalApr.vault = vaultId;
+  newVaultHistoricalApr.save();
 }
