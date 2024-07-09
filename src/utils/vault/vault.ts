@@ -1,4 +1,4 @@
-import { Address, ethereum, BigInt, log, Bytes } from '@graphprotocol/graph-ts';
+import { Address, ethereum, BigInt, log, BigDecimal } from '@graphprotocol/graph-ts';
 import {
   AccountVaultPosition,
   AccountVaultPositionUpdate,
@@ -7,12 +7,12 @@ import {
   Transaction,
   Vault,
   VaultUpdate,
+  VaultHistoricalApr
 } from '../../../generated/schema';
 import { VaultPackage } from '../../../generated/templates/FathomVault/VaultPackage';
 import { FathomVault as VaultTemplate } from '../../../generated/templates';
 import {
   BIGINT_ZERO,
-  DO_CREATE_VAULT_TEMPLATE,
   ZERO_ADDRESS,
   BIGDECIMAL_ZERO
 } from '../constants';
@@ -24,8 +24,7 @@ import * as accountVaultPositionLibrary from '../account/vault-position';
 import * as vaultUpdateLibrary from './vault-update';
 import * as transferLibrary from '../transfer';
 import * as tokenLibrary from '../token';
-import { updateVaultDayData } from './vault-day-data';
-import { booleanToString, removeElementFromArray } from '../commons';
+import { buildIdFromTransaction } from '../commons';
 
 const buildId = (vaultAddress: Address): string => {
   return vaultAddress.toHexString();
@@ -762,4 +761,36 @@ export function updateWithdrawLimitModule(
     vault.withdrawLimitModule = withdrawLimitModule;
     vault.save();
   }
+}
+
+export function updateVaultApr(vaultAddress: Address, transaction: Transaction) : void {
+  // for each strategy in the vault, calculate the apr and get the vault apr based on strategies allocation
+  let vault = Vault.load(vaultAddress.toHexString());
+  if (!vault) {
+    log.warning(
+      'Failed to update vault APR, vault does not exist. Vault address: {}',
+      [vaultAddress.toHexString()]
+    );
+    return;
+  }
+
+  let strategies = vault.strategyIds;
+  let totalApr = BIGDECIMAL_ZERO;
+  for (let i = 0; i < strategies.length; i++) {
+    let strategy = Strategy.load(strategies[i]);
+    let allocation = strategy.currentDebt.toBigDecimal().div(vault.balanceTokens.toBigDecimal());
+    let strategyApr = strategy.apr.times(allocation);
+    totalApr = totalApr.plus(strategyApr);
+  }
+
+  log.info('[Vault] Calculated APR for vault {} at timestamp {} is {}', [vault.id, transaction.timestamp.toString(), totalApr.toString()]);
+
+  vault.apr = totalApr;
+  vault.save();
+  
+  let newVaultHistoricalApr = new VaultHistoricalApr(buildIdFromTransaction(transaction));
+  newVaultHistoricalApr.timestamp = transaction.timestamp;
+  newVaultHistoricalApr.apr = totalApr;
+  newVaultHistoricalApr.vault = vault.id;
+  newVaultHistoricalApr.save();
 }
