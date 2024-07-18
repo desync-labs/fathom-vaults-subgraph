@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.21.3",
-    "@graphprotocol/graph-ts": "^0.20.0"
+    "@graphprotocol/graph-ts": "^0.20.0",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
      "mustache": "^4.2.0",
