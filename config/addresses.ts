@@ -8,8 +8,8 @@ export class Addresses {
   
   // AS compiler does not like const
   export let addresses: Addresses = {
-    Factory: '0xE3E22410ea34661F2b7d5c13EDf7b0c069BD4153',
-    Accountant: '0xe732aAd84ed3a55B02FBE7DF10334c4d2a06afBf',
-    blockNumber: '60600000',
-    network: 'apothem'
+    Factory: '0x0c6e3fd64D5f33eac0DCCDd887A8c7512bCDB7D6',
+    Accountant: '0x427Fd46B341C5a3E1eA19BE11D36E5c526A885d4',
+    blockNumber: '72700000',
+    network: 'xinfin'
   }
