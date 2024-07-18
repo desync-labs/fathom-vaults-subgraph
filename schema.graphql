@@ -100,6 +100,8 @@ type Vault @entity {
   withdrawLimitModule: Bytes!
   "The maximum amount of tokens that can be deposited in this Vault"
   depositLimit: BigInt!
+  "The minimum amount of tokens that can be deposited in this Vault by user"
+  minUserDeposit: BigInt!
   "Is vault in shutdown"
   shutdown: Boolean!
   "Block.timestamp of contract deployment"
@@ -155,6 +157,8 @@ type VaultUpdate @entity {
   newProtocolFee: BigInt
   "The maximum amount of tokens that can be deposited in this Vault"
   depositLimit: BigInt!
+  "The minimum amount of tokens that can be deposited in this Vault by user"
+  minUserDeposit: BigInt!
   ### MANAGEMENT
   "The address authorized for the Contract that charges fees and can give refunds."
   accountant: Bytes!
@@ -328,6 +332,8 @@ type AccountVaultPositionUpdate @entity {
 type Strategy @entity {
   "Ethereum address"
   id: ID!
+  "Interface Id"
+  interfaceId: Bytes!
   "The Vault"
   vault: Vault
   "Ethereum Transaction"
@@ -353,6 +359,8 @@ type Strategy @entity {
   apr: BigDecimal!
   "Historical Annual Percentage Rate of teh Strategy."
   historicalApr: [StrategyHistoricalApr!] @derivedFrom(field: "strategy")
+  "Strategy specific metadata"
+  metadata: Bytes!
 }
 
 type StrategyReport @entity {
