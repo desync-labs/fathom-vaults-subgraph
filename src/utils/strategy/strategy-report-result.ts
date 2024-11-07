@@ -81,37 +81,19 @@ export function create(
     }
 
     let strategy = Strategy.load(currentReport.strategy);
-    let vault = Vault.load(strategy.vault);
-    let reportCount = strategy.reportsCount;
-    let numeratorVault = (vault.apr).plus(strategyReportResult.apr);
+    let reportCount = strategy.reportsCount.plus(BigDecimal.fromString('1'));
     let numeratorStrategy = (strategy.apr).plus(strategyReportResult.apr);
-    let vaultApr: BigDecimal;
-    let strategyApr: BigDecimal;
-    let vaultsHistoricalApr = vault.historicalApr;
-    let strategyHistoricalApr = strategy.historicalApr;      
-    if (reportCount.equals(BIGDECIMAL_ZERO)) {
-      vaultApr = numeratorVault      
-      strategyApr = numeratorStrategy;           
-    } else {
-      vaultApr = numeratorVault.div(reportCount);
-      strategyApr = numeratorStrategy.div(reportCount);
-    }
-    vault.apr = vaultApr;
-    strategy.apr = strategyApr;
-    let newVaultHistoricalApr = new VaultHistoricalApr(id);
-    newVaultHistoricalApr.timestamp = currentReport.timestamp;
-    newVaultHistoricalApr.apr = vaultApr;
-    newVaultHistoricalApr.vault = vault.id;
+
+    strategy.apr = reportCount.equals(BIGDECIMAL_ZERO) ? numeratorStrategy : numeratorStrategy.div(reportCount);
+
     let newStrategyHistoricalApr = new StrategyHistoricalApr(id);
     newStrategyHistoricalApr.timestamp = currentReport.timestamp;
-    newStrategyHistoricalApr.apr = strategyApr;
+    newStrategyHistoricalApr.apr = strategy.apr;
     newStrategyHistoricalApr.strategy = strategy.id;
     //Add the strates addr to the vaults withdrawlQueue
-    newVaultHistoricalApr.save();
     newStrategyHistoricalApr.save();
-    strategy.reportsCount = reportCount.plus(BigDecimal.fromString('1'));
+    strategy.reportsCount = reportCount;
     strategy.save();
-    vault.save();
     strategyReportResult.save();
     return strategyReportResult;
   }

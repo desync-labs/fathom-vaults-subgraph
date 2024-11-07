@@ -8,5 +8,25 @@
         "blockNumber":"60600000"
     },
     "network": "apothem"
+  },
+  "11155111": {
+    "dev":{
+      "addresses": {
+        "Factory": "0x8F323d2f3d533Dd86432e1Bf6B644Cab84f38e8b",
+        "Accountant": "0x89Cb2789Cbd5aEbB1189aa0711A544DC40586C8F"
+      },
+      "blockNumber":"5875279"
+    },
+    "network": "sepolia"
+  },
+    "50": {
+    "xinfin":{
+        "addresses": {
+          "Factory": "0x0c6e3fd64D5f33eac0DCCDd887A8c7512bCDB7D6",
+          "Accountant": "0x427Fd46B341C5a3E1eA19BE11D36E5c526A885d4"
+        },
+        "blockNumber":"72700000"
+    },
+    "network": "xinfin"
   }
 }

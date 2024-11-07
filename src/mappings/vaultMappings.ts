@@ -3,6 +3,7 @@ import {
   DebtPurchased,
   DebtUpdated,
   UpdatedDepositLimit,
+  UpdatedMinUserDeposit,
   StrategyChanged,
   StrategyReported,
   UpdatedMaxDebtForStrategy,
@@ -58,6 +59,8 @@ export function handleDebtUpdated(event: DebtUpdated): void {
     event.params.newDebt,
     ethTransaction
   );
+
+  vaultLibrary.updateVaultApr(event.address, ethTransaction);
 }
 
 export function handleUpdatedDepositLimit(event: UpdatedDepositLimit): void {
@@ -72,6 +75,20 @@ export function handleUpdatedDepositLimit(event: UpdatedDepositLimit): void {
     ethTransaction
   );
 }
+
+export function handleUpdatedMinUserDeposit(event: UpdatedMinUserDeposit): void {
+  let ethTransaction = getOrCreateTransactionFromEvent(
+    event,
+    'UpdatedMinUserDeposit'
+  );
+
+  vaultLibrary.updateMinUserDeposit(
+    event.address,
+    event.params.minUserDeposit,
+    ethTransaction
+  );
+}
+
 
 // Strategy management
 
@@ -130,6 +147,8 @@ export function handleStrategyReported(event: StrategyReported): void {
     );
     return;
   }
+
+  vaultLibrary.updateVaultApr(vaultContractAddress, ethTransaction);
 
   log.info(
     '[Vault mappings] Updating price per share (strategy reported): {}',
