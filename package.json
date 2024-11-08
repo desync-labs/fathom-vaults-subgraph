@@ -25,9 +25,9 @@
     "remove:k8s:apothem": "graph remove --node http://apothem-graph-node-service:8020/ vaults-subgraph",
     "deploy:k8s:apothem": "graph deploy --node http://apothem-graph-node-service:8020/ --ipfs http://ipfs-service:5001 --version-label v0.0.1 vaults-subgraph",
 
-    "create:k8s:xinfin": "graph create --node http://xinfin-graph-node-service:8020/ vaults-subgraph subgraph.yaml",
-    "remove:k8s:xinfin": "graph remove --node http://xinfin-graph-node-service:8020/ vaults-subgraph subgraph.yaml",
-    "deploy:k8s:xinfin": "graph deploy --node http://xinfin-graph-node-service:8020/ --ipfs http://ipfs-service:5001  vaults-subgraph subgraph.yaml",
+    "create:k8s:xinfin": "graph create --node http://xinfin-graph-node-service:8020/ vaults-subgraph",
+    "remove:k8s:xinfin": "graph remove --node http://xinfin-graph-node-service:8020/ vaults-subgraph",
+    "deploy:k8s:xinfin": "graph deploy --node http://xinfin-graph-node-service:8020/ --ipfs http://ipfs-service:5001  --version-label v0.0.1 vaults-subgraph",
     
     "create:k8s:apothem-public-node": "graph create --node https://graph.apothem.network/ fathom-vaults-subgraph",
     "remove:k8s:apothem-public-node": "graph remove --node https://graph.apothem.network/ fathom-vaults-subgraph",
@@ -51,7 +51,7 @@
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.21.3",
     "@graphprotocol/graph-ts": "^0.20.0",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
      "mustache": "^4.2.0",
