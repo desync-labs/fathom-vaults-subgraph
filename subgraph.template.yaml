@@ -6,7 +6,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Factory
-    network: mainnet
+    network: {{network}}
     source:
       abi: FactoryPackage
       address: "{{Factory}}"
@@ -34,7 +34,7 @@ dataSources:
           handler: handleVaultDeployed
   - kind: ethereum/contract
     name: Accountant
-    network: mainnet
+    network: {{network}}
     source:
       abi: GenericAccountant
       address: "{{Accountant}}"
@@ -59,7 +59,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: FathomVault
-    network: mainnet
+    network: {{network}}
     source:
       abi: VaultPackage
     mapping:

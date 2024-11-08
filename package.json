@@ -29,8 +29,18 @@
     "remove:k8s:xinfin": "graph remove --node http://xinfin-graph-node-service:8020/ vaults-subgraph",
     "deploy:k8s:xinfin": "graph deploy --node http://xinfin-graph-node-service:8020/ --ipfs http://ipfs-service:5001  --version-label v0.0.1 vaults-subgraph",
     
+    "create:k8s:apothem-public-node": "graph create --node https://graph.apothem.network/ fathom-vaults-subgraph",
+    "remove:k8s:apothem-public-node": "graph remove --node https://graph.apothem.network/ fathom-vaults-subgraph",
+    "deploy:k8s:apothem-public-node": "graph deploy --node https://graph.apothem.network/ --ipfs https://ipfs.apothem.network --version-label v1.0.0 fathom-vaults-subgraph",
+
     "prep:addresses:apothem:dev": "ts-node config/apothemAddressScript.ts dev && mustache ./config/generatedAddresses.json ./config/addresses.template.ts > ./config/addresses.ts",
     "prep:apothem:dev": "yarn clean && yarn prep:addresses:apothem:dev && mustache ./config/generatedAddresses.json subgraph.template.yaml > subgraph.yaml && graph codegen && graph build",
+
+    "prep:addresses:apothem-public-node:dev": "ts-node config/apothemAddressScript.ts dev && mustache ./config/generatedAddresses.json ./config/addresses.template.ts > ./config/addresses.ts",
+    "prep:apothem-public-node:dev": "yarn clean && yarn prep:addresses:apothem-public-node:dev && mustache ./config/generatedAddresses.json subgraph.template.yaml > subgraph.yaml && graph codegen && graph build",
+
+    "prep:addresses:apothem:qa": "ts-node config/apothemAddressScript.ts qa && mustache ./config/generatedAddresses.json ./config/addresses.template.ts > ./config/addresses.ts",
+    "prep:apothem:qa": "yarn clean && yarn prep:addresses:apothem:qa && mustache ./config/generatedAddresses.json subgraph.template.yaml > subgraph.yaml && graph codegen && graph build",
 
     "prep:addresses:sepolia:dev": "ts-node config/sepoliaAddressScript.ts dev && mustache ./config/generatedAddresses.json ./config/addresses.template.ts > ./config/addresses.ts",
     "prep:sepolia:dev": "yarn clean && yarn prep:addresses:sepolia:dev && mustache ./config/generatedAddresses.json subgraph.template.yaml > subgraph.yaml && graph codegen && graph build",
@@ -48,4 +58,5 @@
      "@types/node": "^14.0.13",
      "typescript": "^3.9.3"
   }
+
 }
